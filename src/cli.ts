@@ -7,8 +7,8 @@ import { EMPTY_CONFIG, isSeverity, severityRank, type ScanConfig, type Severity 
 import { loadConfig } from './config.js';
 import { applyBaseline, createBaseline, formatBaseline, loadBaseline } from './baseline.js';
 import { scanTargets } from './scan.js';
-import { ALL_RULES } from './rules/index.js';
-import { formatText } from './report/text.js';
+import { ALL_RULES, ruleById } from './rules/index.js';
+import { formatRule, formatText } from './report/text.js';
 import { formatJson } from './report/json.js';
 import { formatSarif } from './report/sarif.js';
 
@@ -32,6 +32,7 @@ Options
                           not fail the run (never auto-discovered)
   --write-baseline <file> record the current findings as the baseline, then exit with code 0
   --list-rules            print every rule and exit
+  --explain <rule id>     print what a rule means and what to do about it, then exit
   --no-color              plain text output
   -v, --version           print the version
   -h, --help              print this help
@@ -81,7 +82,7 @@ interface Options {
   color: boolean;
 }
 
-function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' {
+function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' | { explain: string } {
   const options: Options = { targets: [], installed: false, format: 'text', failOn: 'high', minSeverity: 'low', color: true };
   for (let i = 0; i < argv.length; i++) {
     let arg = argv[i] as string;
@@ -104,6 +105,8 @@ function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' {
         return 'version';
       case '--list-rules':
         return 'rules';
+      case '--explain':
+        return { explain: value() };
       case '--installed':
         options.installed = true;
         break;
@@ -175,6 +178,15 @@ export function main(argv: string[], cwd = process.cwd()): number {
   }
   if (parsed === 'rules') {
     process.stdout.write(listRules());
+    return 0;
+  }
+  if ('explain' in parsed) {
+    const rule = ruleById(parsed.explain.toUpperCase());
+    if (!rule) {
+      process.stderr.write(`skill-scan: unknown rule "${parsed.explain}". Run skill-scan --list-rules to see every rule.\n`);
+      return 2;
+    }
+    process.stdout.write(formatRule(rule));
     return 0;
   }
 

@@ -79,6 +79,30 @@ test('--help, --version and --list-rules', () => {
   for (const id of ['PI001', 'EX002', 'SH004', 'AC005', 'SK004']) assert.match(rules, new RegExp(id));
 });
 
+test('every finding comes with what to do about it', () => {
+  const text = run([MALICIOUS]).stdout;
+  assert.match(text, /SH004 {2}Reverse shell[^\n]*\n[^\n]*\n[^\n]*\n {11}Fix: Do not install\./);
+  assert.equal(text.match(/^ {11}Fix: /gm)?.length, text.match(/^ {2}(CRITICAL|HIGH|MEDIUM|LOW) /gm)?.length, 'one Fix line per listed finding');
+  assert.doesNotMatch(run([BENIGN]).stdout, /--explain/);
+
+  const json = JSON.parse(run([MALICIOUS, '--format', 'json']).stdout);
+  for (const f of json.findings) assert.ok(f.remediation.length > 10, `${f.ruleId} has no remediation`);
+});
+
+test('--explain prints one rule, in any letter case, and rejects an unknown id', () => {
+  const explained = run(['--explain', 'sh004']);
+  assert.equal(explained.code, 0);
+  assert.match(explained.stdout, /^SH004 {2}Reverse shell\nSeverity: critical {4}Category: shell\n/);
+  assert.match(explained.stdout, /What it means\n {2}A command that connects a shell/);
+  assert.match(explained.stdout, /What to do\n {2}Do not install/);
+  assert.match(run(['--explain=AC005']).stdout, /"disable": \["AC005"\]/);
+
+  const unknown = run(['--explain', 'ZZ999']);
+  assert.equal(unknown.code, 2);
+  assert.match(unknown.stderr, /unknown rule "ZZ999"/);
+  assert.equal(run(['--explain']).code, 2);
+});
+
 test('skipped files are listed, so an unscanned file is never silent', () => {
   const dir = tempDir({ 'big.md': Buffer.alloc(2 * 1024 * 1024 + 1, 0x61), 'ok.md': 'fine\n' });
   const result = run(['.'], dir);

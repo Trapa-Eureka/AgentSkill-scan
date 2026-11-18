@@ -1,5 +1,6 @@
-import { SEVERITIES, severityRank, type Finding, type ScanResult, type Severity } from '../types.js';
+import { SEVERITIES, severityRank, type Finding, type RuleMeta, type ScanResult, type Severity } from '../types.js';
 import { countBySeverity } from '../scan.js';
+import { ruleById } from '../rules/index.js';
 
 const COLORS: Record<Severity, string> = { critical: '\u001b[1;35m', high: '\u001b[1;31m', medium: '\u001b[33m', low: '\u001b[36m' };
 const RESET = '\u001b[0m';
@@ -26,6 +27,8 @@ export function formatText(result: ScanResult, options: TextOptions): string {
       lines.push(`  ${paint(COLORS[f.severity], f.severity.toUpperCase().padEnd(8))} ${f.ruleId}  ${f.title}  ${paint(DIM, `${f.line}:${f.column}`)}`);
       lines.push(`           ${f.message}`);
       if (f.snippet) lines.push(paint(DIM, `           > ${f.snippet}`));
+      const fix = ruleById(f.ruleId)?.remediation;
+      if (fix) lines.push(`           Fix: ${fix}`);
     }
     lines.push('');
   }
@@ -46,5 +49,22 @@ export function formatText(result: ScanResult, options: TextOptions): string {
   }
   if (result.findings.length === 0) lines.push('No known risky pattern was found. This is not proof that the content is safe.');
   else if (fresh.length === 0) lines.push('Nothing new since the baseline.');
+  if (shown.length > 0) lines.push('Run skill-scan --explain <rule id> for the full description of a rule.');
   return lines.join('\n') + '\n';
+}
+
+/** The text printed by `--explain <rule id>`. */
+export function formatRule(rule: RuleMeta): string {
+  return [
+    `${rule.id}  ${rule.title}`,
+    `Severity: ${rule.severity}    Category: ${rule.category}`,
+    '',
+    'What it means',
+    `  ${rule.description}`,
+    '',
+    'What to do',
+    `  ${rule.remediation}`,
+    '',
+    `To change it in your own policy file (--config): {"disable": ["${rule.id}"]} or {"severity": {"${rule.id}": "low"}}`,
+  ].join('\n') + '\n';
 }
