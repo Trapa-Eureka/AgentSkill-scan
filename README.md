@@ -4,7 +4,7 @@ A static security scanner for AI agent skills and MCP configuration. Point it at
 
 > **Status: early development.**
 > The free, local tier works end to end: the `skill-scan` CLI, 34 built-in rules, folder / file / ZIP input, text / JSON / SARIF output, and a config file for your own policy.
-> The GitHub Action is included but has not been run on GitHub yet. Paid plans are still in planning.
+> The GitHub Action runs on GitHub and its SARIF shows up in code scanning. The package is not on npm yet, and paid plans are still in planning.
 
 **Korean:** [README.ko.md](README.ko.md)
 
@@ -56,13 +56,13 @@ It is built for people who use AI coding agents, and for security and platform t
 | 34 built-in rules in five groups: prompt injection, exfiltration, shell, agent configuration, manifest (see [Rules](#rules))                                         | Done                                                                   |
 | Hidden text: Unicode tag characters (decoded in the report), bidirectional overrides, zero-width runs, instructions in HTML comments                                 | Done                                                                   |
 | MCP and settings checks: unpinned `npx`/`uvx` servers, shell wrappers, literal credentials, plain-http servers, auto-approval, shipped hooks, API endpoint overrides | Done                                                                   |
-| Output as text, JSON, or SARIF 2.1.0                                                                                                                                 | Done (SARIF shape is tested; not yet uploaded to GitHub code scanning) |
+| Output as text, JSON, or SARIF 2.1.0                                                                                                                                 | Done (SARIF uploaded to GitHub code scanning once: 27 alerts with matching severity, file and line) |
 | Exit codes for CI: `--fail-on <severity>`                                                                                                                            | Done                                                                   |
 | `--installed`: scan the skills and agent configuration already on your machine                                                                                       | Done                                                                   |
 | Policy file (`--config`): disable rules, change severities, exclude paths                                                                                            | Done                                                                   |
 | Credentials are masked and control characters neutralised in every report                                                                                            | Done                                                                   |
 | Zero runtime dependencies                                                                                                                                            | Done                                                                   |
-| GitHub Action (`action.yml`) that writes SARIF                                                                                                                       | Included; **not run on GitHub yet**                                    |
+| GitHub Action (`action.yml`) that writes SARIF                                                                                                                       | Done (run on GitHub: reports, blocks on `fail-on`, passes a clean skill) |
 | Published on npm (`npx skill-scan`)                                                                                                                                  | Planned                                                                |
 | Paid plans: organisation policy, central dashboard, allowlists and signatures, PR checks                                                                             | Planned                                                                |
 
@@ -75,7 +75,7 @@ It is built for people who use AI coding agents, and for security and platform t
 
 ## Requirements
 
-- Node.js **22 or newer** (developed and tested on Node 24)
+- Node.js **22 or newer** (developed on Node 24; CI runs Node 22 and 24)
 - Git and npm, to install from source
 
 ## Installation
@@ -157,7 +157,7 @@ A path is a folder, a single file, or a `.zip` / `.skill` archive. With no path,
 
 ### GitHub Action
 
-`action.yml` builds the scanner and writes SARIF. This workflow has **not been run on GitHub yet**; treat it as a starting point.
+`action.yml` builds the scanner and writes SARIF. It was run on GitHub against this repository's test fixtures: it reported the malicious fixture, failed the job at `fail-on: high`, passed the benign fixture, and the uploaded SARIF opened in code scanning at the right file and line.
 
 ```yaml
 permissions:
@@ -231,7 +231,7 @@ The runner needs Node 22 or newer.
 - Only ZIP archives are read (no ZIP64, no encrypted entries, no tar).
 - Only JSON configuration gets structured checks. TOML and YAML configuration is covered by the line rules only.
 - The skill front matter reader handles flat `key: value` fields and simple lists, not all of YAML.
-- Tested on macOS with Node 24. Linux should work; Windows is untested.
+- Tested on macOS (Node 24) and on Linux in CI (Node 22 and 24). Windows is untested.
 
 ## Paid plans (planned)
 
@@ -298,7 +298,7 @@ Scanning this repository itself reports findings: the rule sources and the test 
 - [x] **Phase 2**: structured checks (MCP and settings JSON, skill front matter, hidden Unicode, bundled binaries)
 - [x] **Phase 3**: text / JSON / SARIF reports, exit codes, policy file, `--installed`
 - [x] **Phase 4**: false-positive pass on real installed skills, cautionary downgrade
-- [ ] **Phase 5**: publish to npm, run the GitHub Action on GitHub, upload SARIF to code scanning
+- [x] **Phase 5**: ~~run the GitHub Action on GitHub~~ (done), ~~upload SARIF to code scanning~~ (done), CI on Linux with Node 22 and 24 (done); publishing to npm is still open
 - [ ] **Phase 6**: paid plans: organisation policy, central dashboard, allowlists and signatures, PR checks (planned)
 
 ## Contributing

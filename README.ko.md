@@ -6,7 +6,7 @@ AI 에이전트 스킬과 MCP 설정을 위한 정적 보안 스캐너입니다.
 
 > **상태: 초기 개발 단계.**
 > 무료 로컬 범위는 처음부터 끝까지 동작합니다: `skill-scan` CLI, 내장 규칙 34개, 폴더 / 파일 / ZIP 입력, text / JSON / SARIF 출력, 직접 정하는 정책 파일.
-> GitHub Action은 포함되어 있지만 아직 GitHub에서 실행해 보지 않았습니다. 유료 요금제는 계획 단계입니다.
+> GitHub Action은 GitHub에서 실행되며, SARIF가 code scanning에 표시됩니다. 패키지는 아직 npm에 없고, 유료 요금제는 계획 단계입니다.
 
 **바로 가기:** [빠른 시작](#빠른-시작) · [사용법](#사용법) · [규칙](#규칙) · [설치](#설치)
 
@@ -56,13 +56,13 @@ AI 코딩 에이전트를 쓰는 사람, 그리고 회사에서 어떤 스킬을
 | 내장 규칙 34개, 다섯 묶음: 프롬프트 인젝션, 유출, 셸, 에이전트 설정, 매니페스트 ([규칙](#규칙) 참조) | 완료 |
 | 숨은 텍스트: 유니코드 태그 문자(보고서에 해독해서 표시), 양방향 제어 문자, 연속된 폭 없는 문자, HTML 주석 속 지시 | 완료 |
 | MCP·설정 검사: 버전 미고정 `npx`/`uvx` 서버, 셸 래퍼, 값으로 적힌 자격 증명, 평문 http 서버, 자동 승인, 함께 배포된 훅, API 주소 변경 | 완료 |
-| text, JSON, SARIF 2.1.0 출력 | 완료 (SARIF 형태는 테스트함. GitHub code scanning에 올려 보지는 않음) |
+| text, JSON, SARIF 2.1.0 출력 | 완료 (GitHub code scanning에 1회 업로드: 경고 27건, 심각도·파일·줄 일치) |
 | CI용 종료 코드: `--fail-on <심각도>` | 완료 |
 | `--installed`: 이 컴퓨터에 이미 설치된 스킬과 에이전트 설정 스캔 | 완료 |
 | 정책 파일(`--config`): 규칙 끄기, 심각도 변경, 경로 제외 | 완료 |
 | 모든 보고서에서 자격 증명을 가리고 제어 문자를 무력화 | 완료 |
 | 런타임 의존성 0개 | 완료 |
-| SARIF를 쓰는 GitHub Action (`action.yml`) | 포함됨. **GitHub에서 아직 실행해 보지 않음** |
+| SARIF를 쓰는 GitHub Action (`action.yml`) | 완료 (GitHub에서 실행: 보고, `fail-on` 기준 차단, 정상 스킬 통과) |
 | npm 배포 (`npx skill-scan`) | 계획중 |
 | 유료 요금제: 조직 정책, 중앙 대시보드, 허용 목록과 서명, PR 검사 | 계획중 |
 
@@ -75,7 +75,7 @@ AI 코딩 에이전트를 쓰는 사람, 그리고 회사에서 어떤 스킬을
 
 ## 요구 사항
 
-- Node.js **22 이상** (Node 24에서 개발하고 테스트함)
+- Node.js **22 이상** (Node 24에서 개발, CI는 Node 22와 24에서 실행)
 - 소스에서 설치하려면 Git과 npm
 
 ## 설치
@@ -157,7 +157,7 @@ skill-scan [옵션] [경로 ...]
 
 ### GitHub Action
 
-`action.yml`은 스캐너를 빌드하고 SARIF를 씁니다. 이 워크플로는 **아직 GitHub에서 실행해 보지 않았으니** 출발점으로만 쓰세요.
+`action.yml`은 스캐너를 빌드하고 SARIF를 씁니다. 이 저장소의 테스트 예제를 대상으로 GitHub에서 실행해 보았습니다: 악성 예제를 보고했고, `fail-on: high`에서 작업이 실패했으며, 정상 예제는 통과했고, 올라간 SARIF는 code scanning에서 올바른 파일과 줄로 열렸습니다.
 
 ```yaml
 permissions:
@@ -231,7 +231,7 @@ jobs:
 - ZIP 압축 파일만 읽습니다(ZIP64, 암호화된 항목, tar는 지원하지 않음).
 - 구조 검사는 JSON 설정에만 적용됩니다. TOML과 YAML 설정은 줄 단위 규칙만 적용됩니다.
 - 스킬 머리말 판독기는 단순한 `key: value` 필드와 간단한 목록만 처리하며, YAML 전체를 지원하지 않습니다.
-- macOS와 Node 24에서 테스트했습니다. Linux는 동작할 것으로 보이며, Windows는 테스트하지 않았습니다.
+- macOS(Node 24)와 CI의 Linux(Node 22, 24)에서 테스트했습니다. Windows는 테스트하지 않았습니다.
 
 ## 유료 요금제 (계획중)
 
@@ -298,7 +298,7 @@ node dist/src/cli.js test/fixtures/malicious-skill
 - [x] **Phase 2**: 구조 검사 (MCP·설정 JSON, 스킬 머리말, 숨은 유니코드, 번들 바이너리)
 - [x] **Phase 3**: text / JSON / SARIF 보고서, 종료 코드, 정책 파일, `--installed`
 - [x] **Phase 4**: 실제 설치된 스킬로 오탐 점검, 경고문 하향
-- [ ] **Phase 5**: npm 배포, GitHub에서 Action 실행, code scanning에 SARIF 업로드
+- [x] **Phase 5**: ~~GitHub에서 Action 실행~~ (완료), ~~code scanning에 SARIF 업로드~~ (완료), Linux·Node 22/24 CI (완료). npm 배포는 아직 남음
 - [ ] **Phase 6**: 유료 요금제: 조직 정책, 중앙 대시보드, 허용 목록과 서명, PR 검사 (계획중)
 
 ## 기여
