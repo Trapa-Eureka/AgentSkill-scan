@@ -20,4 +20,4 @@ The free tier is this local CLI plus the GitHub Action. Paid features are only p
 - Rule ids are permanent.
 
 Procedures live in skills (`.claude/skills/add-rule`), hard rules in the hook (`.claude/hooks/block-dangerous.mjs`). Keep this file short.
-All tracked files are written in English.
+All tracked files are written in English. The one exception is a translation named `*.ko.md` (`README.ko.md`): the English file is the source of truth, so change it first and mirror the change in the translation.

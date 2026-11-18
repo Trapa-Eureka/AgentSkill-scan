@@ -6,6 +6,8 @@ A static security scanner for AI agent skills and MCP configuration. Point it at
 > The free, local tier works end to end: the `skill-scan` CLI, 34 built-in rules, folder / file / ZIP input, text / JSON / SARIF output, and a config file for your own policy.
 > The GitHub Action is included but has not been run on GitHub yet. Paid plans are still in planning.
 
+**한국어:** [README.ko.md](README.ko.md)
+
 **Jump to:** [Quick start](#quick-start) · [Usage](#usage) · [Rules](#rules) · [Installation](#installation)
 
 ## Overview
@@ -301,7 +303,7 @@ Scanning this repository itself reports findings: the rule sources and the test 
 
 ## Contributing
 
-The project is at an early stage. Please open an issue to discuss a change before sending a pull request. A rule change needs a matching and a non-matching test case (see `.claude/skills/add-rule/SKILL.md`). All tracked files are written in English.
+The project is at an early stage. Please open an issue to discuss a change before sending a pull request. A rule change needs a matching and a non-matching test case (see `.claude/skills/add-rule/SKILL.md`). All tracked files are written in English; the one exception is a translation named `*.ko.md`, and the English file stays the source of truth.
 
 Found a security problem in the scanner itself? Please do not open a public issue; see [SECURITY.md](SECURITY.md).
 
