@@ -1,0 +1,39 @@
+{
+  "name": "skill-scan",
+  "version": "0.1.0",
+  "description": "Static security scanner for AI agent skills and MCP configuration: prompt injection, secret exfiltration and dangerous shell commands, reported as text, JSON or SARIF.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "skill-scan": "dist/src/cli.js"
+  },
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist/src",
+    "action.yml"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test \"dist/test/*.test.js\"",
+    "test:hooks": "node --test \".claude/hooks/*.test.mjs\"",
+    "check": "npm run typecheck && npm test && npm run test:hooks"
+  },
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "mcp",
+    "security",
+    "scanner",
+    "sarif",
+    "prompt-injection"
+  ],
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}

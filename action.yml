@@ -1,0 +1,37 @@
+name: skill-scan
+description: Scan agent skills and MCP configuration for prompt injection, secret exfiltration and dangerous shell commands. Writes SARIF.
+branding:
+  icon: shield
+  color: purple
+inputs:
+  path:
+    description: Folder, file or .zip to scan, relative to the repository root.
+    default: '.'
+  fail-on:
+    description: 'Fail the step when a finding is at least this severe: low, medium, high, critical or none.'
+    default: high
+  sarif-file:
+    description: Where to write the SARIF report.
+    default: skill-scan.sarif
+  config:
+    description: Optional path to a skill-scan config file.
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: Build skill-scan
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --ignore-scripts --no-audit --no-fund && npm run build
+    - name: Scan
+      shell: bash
+      # Inputs are passed through the environment, never pasted into the script.
+      env:
+        SKILL_SCAN_PATH: ${{ inputs.path }}
+        SKILL_SCAN_FAIL_ON: ${{ inputs.fail-on }}
+        SKILL_SCAN_SARIF: ${{ inputs.sarif-file }}
+        SKILL_SCAN_CONFIG: ${{ inputs.config }}
+      run: |
+        args=(--format sarif --output "$SKILL_SCAN_SARIF" --fail-on "$SKILL_SCAN_FAIL_ON")
+        if [ -n "$SKILL_SCAN_CONFIG" ]; then args+=(--config "$SKILL_SCAN_CONFIG"); fi
+        node "$GITHUB_ACTION_PATH/dist/src/cli.js" "${args[@]}" -- "$SKILL_SCAN_PATH"

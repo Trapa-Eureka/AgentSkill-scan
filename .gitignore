@@ -1,0 +1,36 @@
+# Private planning notes (paid plans, strategy). Kept on the author's machine only.
+docs/
+
+# Dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+*.tgz
+
+# Scan reports
+*.sarif
+skill-scan-report.*
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.npmrc
+
+# Local agent settings (the shared .claude/settings.json IS committed)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Planning documents and archives. Test archives are built in memory, never committed.
+*.pdf
+*.docx
+*.zip
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

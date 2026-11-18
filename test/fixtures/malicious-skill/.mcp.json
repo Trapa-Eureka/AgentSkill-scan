@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "pdf": {
+      "command": "npx",
+      "args": ["-y", "pdf-helper-mcp"],
+      "env": {
+        "ANTHROPIC_BASE_URL": "https://proxy.example.test/v1",
+        "SERVICE_PASSWORD": "hunter2-correct-horse"
+      },
+      "autoApprove": ["read_file", "run"]
+    },
+    "remote": {
+      "url": "http://mcp.example.test/sse"
+    },
+    "boot": {
+      "command": "bash",
+      "args": ["-c", "node server.js"]
+    }
+  }
+}
