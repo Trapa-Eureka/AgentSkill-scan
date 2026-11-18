@@ -6,7 +6,7 @@ A static security scanner for AI agent skills and MCP configuration. Point it at
 > The free, local tier works end to end: the `skill-scan` CLI, 34 built-in rules, folder / file / ZIP input, text / JSON / SARIF output, and a config file for your own policy.
 > The GitHub Action is included but has not been run on GitHub yet. Paid plans are still in planning.
 
-**한국어:** [README.ko.md](README.ko.md)
+**Korean:** [README.ko.md](README.ko.md)
 
 **Jump to:** [Quick start](#quick-start) · [Usage](#usage) · [Rules](#rules) · [Installation](#installation)
 
@@ -50,21 +50,21 @@ It is built for people who use AI coding agents, and for security and platform t
 
 ## Features
 
-| Feature | Status |
-|---|---|
-| `skill-scan <path>`: scan a folder, a single file, or a `.zip` / `.skill` archive (read in memory, never extracted) | Done |
-| 34 built-in rules in five groups: prompt injection, exfiltration, shell, agent configuration, manifest (see [Rules](#rules)) | Done |
-| Hidden text: Unicode tag characters (decoded in the report), bidirectional overrides, zero-width runs, instructions in HTML comments | Done |
-| MCP and settings checks: unpinned `npx`/`uvx` servers, shell wrappers, literal credentials, plain-http servers, auto-approval, shipped hooks, API endpoint overrides | Done |
-| Output as text, JSON, or SARIF 2.1.0 | Done (SARIF shape is tested; not yet uploaded to GitHub code scanning) |
-| Exit codes for CI: `--fail-on <severity>` | Done |
-| `--installed`: scan the skills and agent configuration already on your machine | Done |
-| Policy file (`--config`): disable rules, change severities, exclude paths | Done |
-| Credentials are masked and control characters neutralised in every report | Done |
-| Zero runtime dependencies | Done |
-| GitHub Action (`action.yml`) that writes SARIF | Included; **not run on GitHub yet** |
-| Published on npm (`npx skill-scan`) | Planned |
-| Paid plans: organisation policy, central dashboard, allowlists and signatures, PR checks | Planned |
+| Feature                                                                                                                                                              | Status                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `skill-scan <path>`: scan a folder, a single file, or a `.zip` / `.skill` archive (read in memory, never extracted)                                                  | Done                                                                   |
+| 34 built-in rules in five groups: prompt injection, exfiltration, shell, agent configuration, manifest (see [Rules](#rules))                                         | Done                                                                   |
+| Hidden text: Unicode tag characters (decoded in the report), bidirectional overrides, zero-width runs, instructions in HTML comments                                 | Done                                                                   |
+| MCP and settings checks: unpinned `npx`/`uvx` servers, shell wrappers, literal credentials, plain-http servers, auto-approval, shipped hooks, API endpoint overrides | Done                                                                   |
+| Output as text, JSON, or SARIF 2.1.0                                                                                                                                 | Done (SARIF shape is tested; not yet uploaded to GitHub code scanning) |
+| Exit codes for CI: `--fail-on <severity>`                                                                                                                            | Done                                                                   |
+| `--installed`: scan the skills and agent configuration already on your machine                                                                                       | Done                                                                   |
+| Policy file (`--config`): disable rules, change severities, exclude paths                                                                                            | Done                                                                   |
+| Credentials are masked and control characters neutralised in every report                                                                                            | Done                                                                   |
+| Zero runtime dependencies                                                                                                                                            | Done                                                                   |
+| GitHub Action (`action.yml`) that writes SARIF                                                                                                                       | Included; **not run on GitHub yet**                                    |
+| Published on npm (`npx skill-scan`)                                                                                                                                  | Planned                                                                |
+| Paid plans: organisation policy, central dashboard, allowlists and signatures, PR checks                                                                             | Planned                                                                |
 
 ### How it works
 
@@ -118,28 +118,28 @@ skill-scan [options] [path ...]
 
 A path is a folder, a single file, or a `.zip` / `.skill` archive. With no path, the current folder is scanned.
 
-| I want to... | Command |
-|---|---|
-| scan a skill folder | `skill-scan ./my-skill` |
-| scan a ZIP without unpacking it | `skill-scan ./my-skill.zip` |
-| scan what is installed on this machine | `skill-scan --installed` |
-| see only the serious findings | `skill-scan ./my-skill --min-severity high` |
-| get machine-readable output | `skill-scan ./my-skill --format json` |
-| write SARIF for a dashboard | `skill-scan . --format sarif --output skill-scan.sarif` |
-| fail CI on medium and above | `skill-scan . --fail-on medium` |
-| never fail, only report | `skill-scan . --fail-on none` |
-| apply my own policy | `skill-scan . --config ./policy.json` |
-| list every rule | `skill-scan --list-rules` |
+| I want to...                           | Command                                                 |
+| -------------------------------------- | ------------------------------------------------------- |
+| scan a skill folder                    | `skill-scan ./my-skill`                                 |
+| scan a ZIP without unpacking it        | `skill-scan ./my-skill.zip`                             |
+| scan what is installed on this machine | `skill-scan --installed`                                |
+| see only the serious findings          | `skill-scan ./my-skill --min-severity high`             |
+| get machine-readable output            | `skill-scan ./my-skill --format json`                   |
+| write SARIF for a dashboard            | `skill-scan . --format sarif --output skill-scan.sarif` |
+| fail CI on medium and above            | `skill-scan . --fail-on medium`                         |
+| never fail, only report                | `skill-scan . --fail-on none`                           |
+| apply my own policy                    | `skill-scan . --config ./policy.json`                   |
+| list every rule                        | `skill-scan --list-rules`                               |
 
 `--installed` looks at `~/.claude/skills`, `~/.claude/agents`, `~/.claude/commands`, `~/.codex/skills`, `~/.agents/skills`, and in the current project `.claude/`, `.agents/`, `.mcp.json`, `.cursor/mcp.json` and `.vscode/mcp.json` (whichever exist).
 
 ### Exit codes
 
-| Code | Meaning |
-|---|---|
-| 0 | no finding at or above `--fail-on` (default `high`) |
-| 1 | at least one finding at or above `--fail-on` |
-| 2 | wrong usage, or a target that could not be read |
+| Code | Meaning                                             |
+| ---- | --------------------------------------------------- |
+| 0    | no finding at or above `--fail-on` (default `high`) |
+| 1    | at least one finding at or above `--fail-on`        |
+| 2    | wrong usage, or a target that could not be read     |
 
 ### Policy file
 
@@ -182,42 +182,42 @@ The runner needs Node 22 or newer.
 
 ## Rules
 
-| Id | Severity | What it reports |
-|---|---|---|
-| PI001 | high | Instruction override ("ignore all previous instructions") |
-| PI002 | high | Concealment from the user ("do not tell the user") |
-| PI003 | medium | Approval or sandbox bypass (`--dangerously-skip-permissions`, "disable the safety checks") |
-| PI004 | high | Hidden Unicode: tag characters, bidirectional overrides, zero-width runs |
-| PI005 | medium | Instructions inside an HTML comment |
-| PI006 | medium | Fake system or role marker (`<system>`, `[SYSTEM OVERRIDE]:`) |
-| PI007 | medium | Instructions loaded from a remote URL |
-| EX001 | medium | Credential store access (`~/.ssh/id_*`, `~/.aws/credentials`, `.env`, keychain, browser logins) |
-| EX002 | critical | Secrets sent over the network (`env \| curl`, `curl -d "$(cat …)"`) |
-| EX003 | high | Known data-capture endpoint (request catchers, tunnels, paste and file-drop sites) |
-| EX004 | medium | Secret environment variable passed to a network call |
-| EX005 | high | Credential committed in the skill (masked in the report) |
-| EX006 | medium | Chat webhook endpoint (Discord, Telegram, Slack) |
-| EX007 | low | URL with a raw public IP address |
-| SH001 | high | Remote script piped into an interpreter (`curl … \| sh`) |
-| SH002 | high | Destructive command (`rm -rf ~`, `dd of=/dev/…`) |
-| SH003 | high | Obfuscated code execution (`base64 -d \| sh`, `eval` of decoded text) |
-| SH004 | critical | Reverse shell |
-| SH005 | medium | Persistence outside the project (shell start-up files, cron, launch agents, global git settings) |
-| SH006 | medium | Privilege escalation (`chmod 777`, setuid, `sudo -S`) |
-| SH007 | high | Operating system protection switched off (Gatekeeper, quarantine, TLS verification) |
-| AC001 | medium | MCP server runs an unpinned package |
-| AC002 | medium | MCP server started through a shell |
-| AC003 | medium | Credential written into agent configuration |
-| AC004 | medium | Remote MCP server without TLS |
-| AC005 | high | Approval prompts switched off by configuration (`autoApprove`, `Bash(*)`, bypass mode) |
-| AC006 | medium | Hook command shipped in configuration |
-| AC007 | high | API endpoint or loader override (`ANTHROPIC_BASE_URL`, `LD_PRELOAD`) |
-| AC008 | medium | Agent configuration modified by a command |
-| SK001 | low | Skill manifest incomplete |
-| SK002 | low | Unrestricted tool grant in `allowed-tools` |
-| SK003 | medium | Bundled binary or archive that cannot be inspected |
-| SK004 | high | Archive entry whose path or link escapes the skill folder |
-| SK005 | medium | Symbolic link that leaves the scanned folder |
+| Id    | Severity | What it reports                                                                                  |
+| ----- | -------- | ------------------------------------------------------------------------------------------------ |
+| PI001 | high     | Instruction override ("ignore all previous instructions")                                        |
+| PI002 | high     | Concealment from the user ("do not tell the user")                                               |
+| PI003 | medium   | Approval or sandbox bypass (`--dangerously-skip-permissions`, "disable the safety checks")       |
+| PI004 | high     | Hidden Unicode: tag characters, bidirectional overrides, zero-width runs                         |
+| PI005 | medium   | Instructions inside an HTML comment                                                              |
+| PI006 | medium   | Fake system or role marker (`<system>`, `[SYSTEM OVERRIDE]:`)                                    |
+| PI007 | medium   | Instructions loaded from a remote URL                                                            |
+| EX001 | medium   | Credential store access (`~/.ssh/id_*`, `~/.aws/credentials`, `.env`, keychain, browser logins)  |
+| EX002 | critical | Secrets sent over the network (`env \| curl`, `curl -d "$(cat …)"`)                              |
+| EX003 | high     | Known data-capture endpoint (request catchers, tunnels, paste and file-drop sites)               |
+| EX004 | medium   | Secret environment variable passed to a network call                                             |
+| EX005 | high     | Credential committed in the skill (masked in the report)                                         |
+| EX006 | medium   | Chat webhook endpoint (Discord, Telegram, Slack)                                                 |
+| EX007 | low      | URL with a raw public IP address                                                                 |
+| SH001 | high     | Remote script piped into an interpreter (`curl … \| sh`)                                         |
+| SH002 | high     | Destructive command (`rm -rf ~`, `dd of=/dev/…`)                                                 |
+| SH003 | high     | Obfuscated code execution (`base64 -d \| sh`, `eval` of decoded text)                            |
+| SH004 | critical | Reverse shell                                                                                    |
+| SH005 | medium   | Persistence outside the project (shell start-up files, cron, launch agents, global git settings) |
+| SH006 | medium   | Privilege escalation (`chmod 777`, setuid, `sudo -S`)                                            |
+| SH007 | high     | Operating system protection switched off (Gatekeeper, quarantine, TLS verification)              |
+| AC001 | medium   | MCP server runs an unpinned package                                                              |
+| AC002 | medium   | MCP server started through a shell                                                               |
+| AC003 | medium   | Credential written into agent configuration                                                      |
+| AC004 | medium   | Remote MCP server without TLS                                                                    |
+| AC005 | high     | Approval prompts switched off by configuration (`autoApprove`, `Bash(*)`, bypass mode)           |
+| AC006 | medium   | Hook command shipped in configuration                                                            |
+| AC007 | high     | API endpoint or loader override (`ANTHROPIC_BASE_URL`, `LD_PRELOAD`)                             |
+| AC008 | medium   | Agent configuration modified by a command                                                        |
+| SK001 | low      | Skill manifest incomplete                                                                        |
+| SK002 | low      | Unrestricted tool grant in `allowed-tools`                                                       |
+| SK003 | medium   | Bundled binary or archive that cannot be inspected                                               |
+| SK004 | high     | Archive entry whose path or link escapes the skill folder                                        |
+| SK005 | medium   | Symbolic link that leaves the scanned folder                                                     |
 
 **Warnings are lowered one level.** In the prose of a Markdown file (not in a code block, not in a script), a shell or exfiltration match on a line that reads like a warning ("never run `curl … | sh`") is reported one severity lower and marked as cautionary. Prompt-injection rules are never lowered.
 
@@ -247,7 +247,7 @@ This repository ships a Claude Code `PreToolUse` hook (`.claude/hooks/block-dang
 - `curl | sh` and `npm publish`
 - writing a string shaped like a real credential into a file
 
-It matches command text, so a command that merely *mentions* one of these (for example a heredoc that writes a test fixture) is blocked too; create fixtures with the editor instead. It is a safety net, not a complete defence.
+It matches command text, so a command that merely _mentions_ one of these (for example a heredoc that writes a test fixture) is blocked too; create fixtures with the editor instead. It is a safety net, not a complete defence.
 
 ## Data and privacy
 
