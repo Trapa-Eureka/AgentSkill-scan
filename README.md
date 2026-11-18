@@ -4,7 +4,7 @@ A static security scanner for AI agent skills and MCP configuration. Point it at
 
 > **Status: early development.**
 > The free, local tier works end to end: the `skill-scan` CLI, 34 built-in rules, folder / file / ZIP input, text / JSON / SARIF output, and a config file for your own policy.
-> The GitHub Action runs on GitHub and its SARIF shows up in code scanning. The package is not on npm yet, and paid plans are still in planning.
+> The GitHub Action runs on GitHub and its SARIF shows up in code scanning. The package is on npm as `@shiz_son/skill-scan`. Paid plans are still in planning.
 
 **Korean:** [README.ko.md](README.ko.md)
 
@@ -72,7 +72,7 @@ It is built for people who use AI coding agents, and for security and platform t
 | Credentials are masked and control characters neutralised in every report                                                                                            | Done                                                                   |
 | Zero runtime dependencies                                                                                                                                            | Done                                                                   |
 | GitHub Action (`action.yml`) that writes SARIF                                                                                                                       | Done (run on GitHub: reports, blocks on `fail-on`, passes a clean skill) |
-| Published on npm (`npx skill-scan`)                                                                                                                                  | Planned                                                                |
+| Published on npm (`npx @shiz_son/skill-scan`) | Done |
 | Paid plans: organisation policy, central dashboard, allowlists and signatures, PR checks                                                                             | Planned                                                                |
 
 ### How it works
@@ -85,34 +85,38 @@ It is built for people who use AI coding agents, and for security and platform t
 ## Requirements
 
 - Node.js **22 or newer** (developed on Node 24; CI runs Node 22 and 24)
-- Git and npm, to install from source
+- npm (comes with Node.js); Git only to install from source
 
 ## Installation
 
-The package is not published to npm yet. Install from source:
+The package is on npm as `@shiz_son/skill-scan` (npm refused the unscoped name as too similar to an existing package). The command it installs is `skill-scan`.
+
+Run it without installing:
+
+```bash
+npx @shiz_son/skill-scan ./some-skill
+```
+
+Or install it once and use the `skill-scan` command:
+
+```bash
+npm install -g @shiz_son/skill-scan
+skill-scan ./some-skill
+```
+
+### From source
 
 ```bash
 git clone https://github.com/Trapa-Eureka/AgentSkill-scan.git
 cd AgentSkill-scan
 npm install
 npm run build
-```
-
-Until it is published, run it from the build output. For convenience, add an alias (adjust the path):
-
-```bash
-alias skill-scan='node /path/to/AgentSkill-scan/dist/src/cli.js'
-```
-
-Publishing to npm is planned. Once it is published you will be able to run it without installing:
-
-```bash
-npx skill-scan ./some-skill
+alias skill-scan='node /path/to/AgentSkill-scan/dist/src/cli.js'   # adjust the path
 ```
 
 ## Quick start
 
-You need the build from [Installation](#installation) and the `skill-scan` alias.
+You need the `skill-scan` command from [Installation](#installation), or write `npx @shiz_son/skill-scan` in its place.
 
 1. **Scan before you install.** `skill-scan ./downloaded-skill` or `skill-scan ./downloaded-skill.zip`.
 2. **Read the findings from the top.** `CRITICAL` and `HIGH` first; open the file at the line shown. Each finding ends with a `Fix:` line that says what to do.
@@ -351,7 +355,7 @@ Scanning this repository itself reports findings: the rule sources and the test 
 - [x] **Phase 2**: structured checks (MCP and settings JSON, skill front matter, hidden Unicode, bundled binaries)
 - [x] **Phase 3**: text / JSON / SARIF reports, exit codes, policy file, `--installed`
 - [x] **Phase 4**: false-positive pass on real installed skills, cautionary downgrade
-- [x] **Phase 5**: ~~run the GitHub Action on GitHub~~ (done), ~~upload SARIF to code scanning~~ (done), CI on Linux with Node 22 and 24 (done); publishing to npm is still open
+- [x] **Phase 5**: ~~run the GitHub Action on GitHub~~ (done), ~~upload SARIF to code scanning~~ (done), CI on Linux with Node 22 and 24 (done), ~~publish to npm~~ (done, as `@shiz_son/skill-scan`)
 - [ ] **Phase 6**: paid plans: organisation policy, central dashboard, allowlists and signatures, PR checks (planned)
 
 ## Contributing

@@ -6,7 +6,7 @@ AI 에이전트 스킬과 MCP 설정을 위한 정적 보안 스캐너입니다.
 
 > **상태: 초기 개발 단계.**
 > 무료 로컬 범위는 처음부터 끝까지 동작합니다: `skill-scan` CLI, 내장 규칙 34개, 폴더 / 파일 / ZIP 입력, text / JSON / SARIF 출력, 직접 정하는 정책 파일.
-> GitHub Action은 GitHub에서 실행되며, SARIF가 code scanning에 표시됩니다. 패키지는 아직 npm에 없고, 유료 요금제는 계획 단계입니다.
+> GitHub Action은 GitHub에서 실행되며, SARIF가 code scanning에 표시됩니다. 패키지는 npm에 `@shiz_son/skill-scan`으로 있습니다. 유료 요금제는 계획 단계입니다.
 
 **바로 가기:** [빠른 시작](#빠른-시작) · [사용법](#사용법) · [규칙](#규칙) · [설치](#설치)
 
@@ -72,7 +72,7 @@ AI 코딩 에이전트를 쓰는 사람, 그리고 회사에서 어떤 스킬을
 | 모든 보고서에서 자격 증명을 가리고 제어 문자를 무력화 | 완료 |
 | 런타임 의존성 0개 | 완료 |
 | SARIF를 쓰는 GitHub Action (`action.yml`) | 완료 (GitHub에서 실행: 보고, `fail-on` 기준 차단, 정상 스킬 통과) |
-| npm 배포 (`npx skill-scan`) | 계획중 |
+| npm 배포 (`npx @shiz_son/skill-scan`) | 완료 |
 | 유료 요금제: 조직 정책, 중앙 대시보드, 허용 목록과 서명, PR 검사 | 계획중 |
 
 ### 동작 방식
@@ -85,34 +85,38 @@ AI 코딩 에이전트를 쓰는 사람, 그리고 회사에서 어떤 스킬을
 ## 요구 사항
 
 - Node.js **22 이상** (Node 24에서 개발, CI는 Node 22와 24에서 실행)
-- 소스에서 설치하려면 Git과 npm
+- npm(Node.js에 포함). Git은 소스에서 설치할 때만 필요
 
 ## 설치
 
-아직 npm에 배포하지 않았습니다. 소스에서 설치합니다.
+패키지는 npm에 `@shiz_son/skill-scan`이라는 이름으로 있습니다(범위 없는 이름은 기존 패키지와 너무 비슷하다는 이유로 npm이 거절했습니다). 설치되는 명령은 `skill-scan`입니다.
+
+설치 없이 실행합니다.
+
+```bash
+npx @shiz_son/skill-scan ./some-skill
+```
+
+한 번 설치해 두고 `skill-scan` 명령으로 쓸 수도 있습니다.
+
+```bash
+npm install -g @shiz_son/skill-scan
+skill-scan ./some-skill
+```
+
+### 소스에서 설치
 
 ```bash
 git clone https://github.com/Trapa-Eureka/AgentSkill-scan.git
 cd AgentSkill-scan
 npm install
 npm run build
-```
-
-배포 전까지는 빌드 결과물로 실행합니다. 편하게 쓰려면 별칭을 추가하세요(경로는 맞게 바꿉니다).
-
-```bash
-alias skill-scan='node /path/to/AgentSkill-scan/dist/src/cli.js'
-```
-
-npm 배포는 계획중입니다. 배포되면 설치 없이 실행할 수 있습니다.
-
-```bash
-npx skill-scan ./some-skill
+alias skill-scan='node /path/to/AgentSkill-scan/dist/src/cli.js'   # 경로는 맞게 바꿉니다
 ```
 
 ## 빠른 시작
 
-[설치](#설치)의 빌드와 `skill-scan` 별칭이 필요합니다.
+[설치](#설치)의 `skill-scan` 명령이 필요합니다. 설치하지 않았다면 그 자리에 `npx @shiz_son/skill-scan`을 쓰면 됩니다.
 
 1. **설치하기 전에 스캔합니다.** `skill-scan ./downloaded-skill` 또는 `skill-scan ./downloaded-skill.zip`.
 2. **위에서부터 읽습니다.** `CRITICAL`과 `HIGH`를 먼저 보고, 표시된 줄에서 파일을 엽니다. 각 항목 끝의 `Fix:` 줄이 조치 방법입니다.
@@ -351,7 +355,7 @@ node dist/src/cli.js test/fixtures/malicious-skill
 - [x] **Phase 2**: 구조 검사 (MCP·설정 JSON, 스킬 머리말, 숨은 유니코드, 번들 바이너리)
 - [x] **Phase 3**: text / JSON / SARIF 보고서, 종료 코드, 정책 파일, `--installed`
 - [x] **Phase 4**: 실제 설치된 스킬로 오탐 점검, 경고문 하향
-- [x] **Phase 5**: ~~GitHub에서 Action 실행~~ (완료), ~~code scanning에 SARIF 업로드~~ (완료), Linux·Node 22/24 CI (완료). npm 배포는 아직 남음
+- [x] **Phase 5**: ~~GitHub에서 Action 실행~~ (완료), ~~code scanning에 SARIF 업로드~~ (완료), Linux·Node 22/24 CI (완료), ~~npm 배포~~ (완료, `@shiz_son/skill-scan`)
 - [ ] **Phase 6**: 유료 요금제: 조직 정책, 중앙 대시보드, 허용 목록과 서명, PR 검사 (계획중)
 
 ## 기여

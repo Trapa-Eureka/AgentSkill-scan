@@ -1,5 +1,5 @@
 {
-  "name": "skill-scan",
+  "name": "@shiz_son/skill-scan",
   "version": "0.1.0",
   "description": "Static security scanner for AI agent skills and MCP configuration: prompt injection, secret exfiltration and dangerous shell commands, reported as text, JSON or SARIF.",
   "license": "MIT",
