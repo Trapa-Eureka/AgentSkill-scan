@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "description": "Static security scanner for AI agent skills and MCP configuration: prompt injection, secret exfiltration and dangerous shell commands, reported as text, JSON or SARIF.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Trapa-Eureka/AgentSkill-scan.git"
+  },
+  "homepage": "https://github.com/Trapa-Eureka/AgentSkill-scan#readme",
+  "bugs": {
+    "url": "https://github.com/Trapa-Eureka/AgentSkill-scan/issues"
+  },
   "type": "module",
   "bin": {
     "skill-scan": "dist/src/cli.js"
@@ -18,11 +26,13 @@
     "node": ">=22"
   },
   "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "npm run build && node --test \"dist/test/*.test.js\"",
     "test:hooks": "node --test \".claude/hooks/*.test.mjs\"",
-    "check": "npm run typecheck && npm test && npm run test:hooks"
+    "check": "npm run typecheck && npm test && npm run test:hooks",
+    "prepublishOnly": "npm run clean && npm run check"
   },
   "keywords": [
     "agent-skills",
