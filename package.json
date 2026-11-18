@@ -38,13 +38,24 @@
     "agent-skills",
     "claude-code",
     "mcp",
-    "security",
-    "scanner",
+    "model-context-protocol",
+    "ai-agents",
+    "ai-security",
+    "llm-security",
+    "prompt-injection",
+    "security-scanner",
+    "static-analysis",
     "sarif",
-    "prompt-injection"
+    "code-scanning",
+    "github-actions",
+    "supply-chain-security",
+    "cli",
+    "typescript",
+    "nodejs"
   ],
   "devDependencies": {
     "@types/node": "^26.6.6",
     "typescript": "^7.0.2"
-  }
+  },
+  "author": "Shiz"
 }
