@@ -16,6 +16,9 @@ inputs:
   config:
     description: Optional path to a skill-scan config file.
     default: ''
+  baseline:
+    description: Optional path to a baseline file. Findings recorded in it do not fail the step.
+    default: ''
 runs:
   using: composite
   steps:
@@ -31,7 +34,9 @@ runs:
         SKILL_SCAN_FAIL_ON: ${{ inputs.fail-on }}
         SKILL_SCAN_SARIF: ${{ inputs.sarif-file }}
         SKILL_SCAN_CONFIG: ${{ inputs.config }}
+        SKILL_SCAN_BASELINE: ${{ inputs.baseline }}
       run: |
         args=(--format sarif --output "$SKILL_SCAN_SARIF" --fail-on "$SKILL_SCAN_FAIL_ON")
         if [ -n "$SKILL_SCAN_CONFIG" ]; then args+=(--config "$SKILL_SCAN_CONFIG"); fi
+        if [ -n "$SKILL_SCAN_BASELINE" ]; then args+=(--baseline "$SKILL_SCAN_BASELINE"); fi
         node "$GITHUB_ACTION_PATH/dist/src/cli.js" "${args[@]}" -- "$SKILL_SCAN_PATH"

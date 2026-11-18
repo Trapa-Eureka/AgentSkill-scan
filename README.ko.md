@@ -60,6 +60,7 @@ AI 코딩 에이전트를 쓰는 사람, 그리고 회사에서 어떤 스킬을
 | CI용 종료 코드: `--fail-on <심각도>` | 완료 |
 | `--installed`: 이 컴퓨터에 이미 설치된 스킬과 에이전트 설정 스캔 | 완료 |
 | 정책 파일(`--config`): 규칙 끄기, 심각도 변경, 경로 제외 | 완료 |
+| 기준선(`--baseline`, `--write-baseline`): 오늘의 탐지 항목을 받아들이고 새 항목만 실패 처리 | 완료 |
 | 모든 보고서에서 자격 증명을 가리고 제어 문자를 무력화 | 완료 |
 | 런타임 의존성 0개 | 완료 |
 | SARIF를 쓰는 GitHub Action (`action.yml`) | 완료 (GitHub에서 실행: 보고, `fail-on` 기준 차단, 정상 스킬 통과) |
@@ -129,6 +130,7 @@ skill-scan [옵션] [경로 ...]
 | medium 이상이면 CI 실패 | `skill-scan . --fail-on medium` |
 | 실패 없이 보고만 | `skill-scan . --fail-on none` |
 | 내 정책 적용 | `skill-scan . --config ./policy.json` |
+| 오늘의 탐지는 받아들이고 새 항목만 실패 | `skill-scan . --baseline ./skill-scan.baseline.json` |
 | 모든 규칙 나열 | `skill-scan --list-rules` |
 
 `--installed`는 `~/.claude/skills`, `~/.claude/agents`, `~/.claude/commands`, `~/.codex/skills`, `~/.agents/skills`, 그리고 현재 프로젝트의 `.claude/`, `.agents/`, `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json` 중 있는 것을 봅니다.
@@ -154,6 +156,22 @@ skill-scan [옵션] [경로 ...]
 `exclude` 패턴은 보고서에 출력되는 경로와 대조합니다(`*`는 한 폴더 안, `**`는 여러 폴더에 걸쳐).
 
 **정책 파일은 `--config`로 지정한 것만 읽습니다.** 스캔 대상 폴더에서 자동으로 찾지 않으며, 줄 안에 적는 "무시" 주석도 없습니다. 스캔되는 내용은 신뢰할 수 없으므로, 스스로 자기 탐지 항목을 끌 수 있어서는 안 됩니다.
+
+### 기준선: 새로 생긴 탐지만 실패 처리
+
+이미 탐지 항목이 있는 저장소는 하루아침에 CI 차단을 켤 수 없습니다. 오늘 있는 것을 기록해 한 번 검토해 두면, 그 뒤로는 **새로 생긴** 탐지만 실행을 실패시킵니다.
+
+```bash
+skill-scan . --write-baseline skill-scan.baseline.json   # 현재 탐지 항목을 기록 (종료 코드 0)
+skill-scan . --baseline skill-scan.baseline.json         # 알려진 항목은 나열하지 않고 실패시키지도 않음
+```
+
+- 탐지 항목은 줄 번호가 아니라 규칙, 파일, 문제가 된 텍스트로 대조합니다. 파일의 다른 줄을 고쳐도 알려진 항목이 새 항목이 되지 않습니다. 탐지된 줄 자체를 바꾸면 새 항목이 됩니다.
+- 파일 안의 경로는 명령을 실행한 폴더 기준입니다. 기준선은 같은 폴더(CI에서는 저장소 루트)에서 만들고 사용하세요.
+- 기준선 파일에는 규칙 id, 경로, 개수, 해시만 들어가며 스캔한 파일의 텍스트는 들어가지 않습니다. 커밋해 두고 변경될 때마다 검토하세요. 항목을 추가하는 풀 리퀘스트는 탐지 항목을 받아들이는 것입니다.
+- 받아들였던 항목이 사라지면 보고서가 알려 줍니다. `--write-baseline`으로 파일을 갱신하세요.
+- 정책 파일과 마찬가지로 기준선은 `--baseline`으로 지정한 것만 읽으며, 스캔 대상 폴더에서 찾지 않습니다.
+- SARIF에서는 결과에 `baselineState`(`new` 또는 `unchanged`)가 붙습니다.
 
 ### GitHub Action
 
@@ -266,6 +284,7 @@ AgentSkill-scan/
 │   ├── zip.ts          # 읽기 전용 ZIP 판독기
 │   ├── sanitize.ts     # 발췌문 가리기와 안전한 출력
 │   ├── config.ts       # 정책 파일
+│   ├── baseline.ts     # 알려진 탐지 항목: 새 항목만 실패 처리
 │   ├── rules/          # 줄 단위 규칙, JSON 설정 검사, 매니페스트 검사, 숨은 텍스트
 │   └── report/         # text, JSON, SARIF
 ├── test/

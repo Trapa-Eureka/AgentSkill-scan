@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto';
 import type { ScanResult, Severity } from '../types.js';
 import { ALL_RULES } from '../rules/index.js';
+import { fingerprint } from '../baseline.js';
 
 const LEVEL: Record<Severity, 'error' | 'warning' | 'note'> = { critical: 'error', high: 'error', medium: 'warning', low: 'note' };
 // GitHub code scanning reads this number to show its own critical/high/medium/low label.
@@ -31,9 +31,8 @@ export function formatSarif(result: ScanResult, version: string): string {
         },
       },
     ],
-    partialFingerprints: {
-      'skillScan/v1': createHash('sha256').update(`${f.ruleId}\n${f.file}\n${f.snippet}`).digest('hex').slice(0, 32),
-    },
+    partialFingerprints: { 'skillScan/v1': fingerprint(f) },
+    ...(result.baseline ? { baselineState: f.baseline ? 'unchanged' : 'new' } : {}),
     properties: { severity: f.severity, 'security-severity': SECURITY_SEVERITY[f.severity], category: f.category },
   }));
 

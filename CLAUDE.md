@@ -9,11 +9,11 @@ The free tier is this local CLI plus the GitHub Action. Paid features are only p
 
 ## Layout
 - `src/rules/`: detection rules. `line-rules.ts` (regex per line), `structured.ts` (JSON config), `manifest.ts` (front matter, bundled files), `hidden.ts` (invisible text).
-- `src/scan.ts` engine, `src/files.ts` + `src/zip.ts` input, `src/report/` output, `src/cli.ts` command line.
+- `src/scan.ts` engine, `src/baseline.ts` known findings, `src/files.ts` + `src/zip.ts` input, `src/report/` output, `src/cli.ts` command line.
 - `test/fixtures/`: `malicious-skill` (every headline rule fires) and `benign-skill` (zero findings).
 
 ## Invariants (tested; do not break)
-- Scanned content is hostile. It can never silence the scanner: no inline ignore comments, and the config is read only from `--config`.
+- Scanned content is hostile. It can never silence the scanner: no inline ignore comments, and the config and the baseline are read only from `--config` / `--baseline`.
 - Nothing from a scanned file is printed raw: snippets go through `makeSnippet` (credentials masked, control and invisible characters shown as `<U+XXXX>`).
 - Archives are read in memory, never extracted. Every size is capped, and every file that was not scanned is listed in the report.
 - Zero runtime dependencies. Do not add one without asking.

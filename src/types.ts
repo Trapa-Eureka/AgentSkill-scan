@@ -48,6 +48,8 @@ export interface Finding {
   snippet: string;
   /** True when the severity was lowered because the line reads like a warning. */
   cautionary?: boolean;
+  /** True when the finding matches an entry of the baseline given with `--baseline`. */
+  baseline?: boolean;
 }
 
 export interface ScanFile {
@@ -66,6 +68,8 @@ export interface ScanResult {
   filesScanned: number;
   skipped: SkippedFile[];
   findings: Finding[];
+  /** Present when a baseline was applied. */
+  baseline?: { known: number; stale: number };
 }
 
 export interface ScanConfig {

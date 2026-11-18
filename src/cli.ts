@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EMPTY_CONFIG, isSeverity, severityRank, type ScanConfig, type Severity } from './types.js';
 import { loadConfig } from './config.js';
+import { applyBaseline, createBaseline, formatBaseline, loadBaseline } from './baseline.js';
 import { scanTargets } from './scan.js';
 import { ALL_RULES } from './rules/index.js';
 import { formatText } from './report/text.js';
@@ -27,6 +28,9 @@ Options
                           low, medium, high (default), critical, or none
   --min-severity <sev>    list only findings at least this severe in the text report (default: low)
   --config <file>         JSON file with "disable", "severity" and "exclude" (never auto-discovered)
+  --baseline <file>       findings recorded in this file are known: they are not listed and do
+                          not fail the run (never auto-discovered)
+  --write-baseline <file> record the current findings as the baseline, then exit with code 0
   --list-rules            print every rule and exit
   --no-color              plain text output
   -v, --version           print the version
@@ -72,6 +76,8 @@ interface Options {
   failOn: Severity | 'none';
   minSeverity: Severity;
   config?: string;
+  baseline?: string;
+  writeBaseline?: string;
   color: boolean;
 }
 
@@ -115,6 +121,12 @@ function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' {
         break;
       case '--config':
         options.config = value();
+        break;
+      case '--baseline':
+        options.baseline = value();
+        break;
+      case '--write-baseline':
+        options.writeBaseline = value();
         break;
       case '--fail-on': {
         const level = value();
@@ -176,6 +188,18 @@ export function main(argv: string[], cwd = process.cwd()): number {
     }
     const result = scanTargets(targets, { cwd, config });
 
+    if (options.writeBaseline) {
+      const baseline = createBaseline(result.findings);
+      writeFileSync(path.resolve(cwd, options.writeBaseline), formatBaseline(baseline));
+      process.stderr.write(`skill-scan: recorded ${result.findings.length} finding(s) as the baseline in ${options.writeBaseline}\n`);
+      return 0;
+    }
+    if (options.baseline) {
+      const applied = applyBaseline(result.findings, loadBaseline(path.resolve(cwd, options.baseline)));
+      result.findings = applied.findings;
+      result.baseline = { known: applied.known, stale: applied.stale };
+    }
+
     const useColor = options.color && !options.output && process.stdout.isTTY === true && !process.env.NO_COLOR;
     const report =
       options.format === 'json'
@@ -185,12 +209,13 @@ export function main(argv: string[], cwd = process.cwd()): number {
           : formatText(result, { color: useColor, minSeverity: options.minSeverity });
     if (options.output) {
       writeFileSync(path.resolve(cwd, options.output), report);
-      process.stderr.write(`skill-scan: ${result.findings.length} finding(s) in ${result.filesScanned} file(s); report written to ${options.output}\n`);
+      const known = result.baseline ? ` (${result.baseline.known} known from the baseline)` : '';
+      process.stderr.write(`skill-scan: ${result.findings.length} finding(s)${known} in ${result.filesScanned} file(s); report written to ${options.output}\n`);
     } else process.stdout.write(report);
 
     if (options.failOn === 'none') return 0;
     const threshold = severityRank(options.failOn);
-    return result.findings.some((f) => severityRank(f.severity) >= threshold) ? 1 : 0;
+    return result.findings.some((f) => !f.baseline && severityRank(f.severity) >= threshold) ? 1 : 0;
   } catch (error) {
     process.stderr.write(`skill-scan: ${(error as Error).message}\n`);
     return 2;

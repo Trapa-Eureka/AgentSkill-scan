@@ -60,6 +60,7 @@ It is built for people who use AI coding agents, and for security and platform t
 | Exit codes for CI: `--fail-on <severity>`                                                                                                                            | Done                                                                   |
 | `--installed`: scan the skills and agent configuration already on your machine                                                                                       | Done                                                                   |
 | Policy file (`--config`): disable rules, change severities, exclude paths                                                                                            | Done                                                                   |
+| Baseline (`--baseline`, `--write-baseline`): accept today's findings, fail only on new ones | Done |
 | Credentials are masked and control characters neutralised in every report                                                                                            | Done                                                                   |
 | Zero runtime dependencies                                                                                                                                            | Done                                                                   |
 | GitHub Action (`action.yml`) that writes SARIF                                                                                                                       | Done (run on GitHub: reports, blocks on `fail-on`, passes a clean skill) |
@@ -129,6 +130,7 @@ A path is a folder, a single file, or a `.zip` / `.skill` archive. With no path,
 | fail CI on medium and above            | `skill-scan . --fail-on medium`                         |
 | never fail, only report                | `skill-scan . --fail-on none`                           |
 | apply my own policy                    | `skill-scan . --config ./policy.json`                   |
+| accept today's findings, fail only on new ones | `skill-scan . --baseline ./skill-scan.baseline.json` |
 | list every rule                        | `skill-scan --list-rules`                               |
 
 `--installed` looks at `~/.claude/skills`, `~/.claude/agents`, `~/.claude/commands`, `~/.codex/skills`, `~/.agents/skills`, and in the current project `.claude/`, `.agents/`, `.mcp.json`, `.cursor/mcp.json` and `.vscode/mcp.json` (whichever exist).
@@ -154,6 +156,22 @@ A path is a folder, a single file, or a `.zip` / `.skill` archive. With no path,
 `exclude` patterns match the path as printed in the report (`*` inside one folder, `**` across folders).
 
 **The policy file is read only from `--config`.** It is never picked up from the folder being scanned, and there are no inline "ignore" comments. The content being scanned is untrusted; it must not be able to switch its own findings off.
+
+### Baseline: fail only on new findings
+
+A repository that already has findings cannot switch a CI gate on from one day to the next. Record what is there today, review that list once, and from then on only **new** findings fail the run.
+
+```bash
+skill-scan . --write-baseline skill-scan.baseline.json   # record the current findings (exit code 0)
+skill-scan . --baseline skill-scan.baseline.json         # known findings are not listed and do not fail
+```
+
+- A finding is matched by rule, file and offending text, not by line number, so editing other lines of the file does not make a known finding new. Changing the flagged line itself does.
+- The paths in the file are relative to the folder you run the command in. Write and use the baseline from the same folder (in CI: the repository root).
+- The baseline file holds rule ids, paths, counts and hashes, never text from the scanned files. Commit it and review every change to it: a pull request that adds an entry is accepting a finding.
+- When an accepted finding disappears, the report says so; refresh the file with `--write-baseline`.
+- Like the policy file, the baseline is read only from `--baseline`, never discovered in the scanned folder.
+- In SARIF, results carry `baselineState` (`new` or `unchanged`).
 
 ### GitHub Action
 
@@ -266,6 +284,7 @@ AgentSkill-scan/
 │   ├── zip.ts          # read-only ZIP reader
 │   ├── sanitize.ts     # snippet masking and safe printing
 │   ├── config.ts       # policy file
+│   ├── baseline.ts     # known findings: fail only on new ones
 │   ├── rules/          # line rules, JSON config checks, manifest checks, hidden text
 │   └── report/         # text, JSON, SARIF
 ├── test/
