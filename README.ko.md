@@ -64,6 +64,7 @@ AI 코딩 에이전트를 쓰는 사람, 그리고 회사에서 어떤 스킬을
 | CI용 종료 코드: `--fail-on <심각도>` | 완료 |
 | `--installed`: 이 컴퓨터에 이미 설치된 스킬과 에이전트 설정 스캔 | 완료 |
 | 정책 파일(`--config`): 규칙 끄기, 심각도 변경, 경로 제외 | 완료 |
+| 에이전트용 스킬(`--install-skill`): 코딩 에이전트가 스킬을 설치하기 전에 스캔 | 완료 (실제 에이전트 세션으로는 미확인) |
 | 탐지 항목마다 조치 방법 표시 (text의 `Fix:` 줄, JSON의 `remediation`, SARIF의 `help`), `--explain <규칙 id>`로 규칙 하나 설명 | 완료 |
 | 기준선(`--baseline`, `--write-baseline`): 오늘의 탐지 항목을 받아들이고 새 항목만 실패 처리 | 완료 |
 | 모든 보고서에서 자격 증명을 가리고 제어 문자를 무력화 | 완료 |
@@ -137,6 +138,7 @@ skill-scan [옵션] [경로 ...]
 | 내 정책 적용 | `skill-scan . --config ./policy.json` |
 | 오늘의 탐지는 받아들이고 새 항목만 실패 | `skill-scan . --baseline ./skill-scan.baseline.json` |
 | 모든 규칙 나열 | `skill-scan --list-rules` |
+| 코딩 에이전트가 설치 전에 스캔하게 하기 | `skill-scan --install-skill user` |
 | 규칙 하나의 의미와 조치 방법 보기 | `skill-scan --explain SH001` |
 
 `--installed`는 `~/.claude/skills`, `~/.claude/agents`, `~/.claude/commands`, `~/.codex/skills`, `~/.agents/skills`, 그리고 현재 프로젝트의 `.claude/`, `.agents/`, `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json` 중 있는 것을 봅니다.
@@ -178,6 +180,23 @@ skill-scan . --baseline skill-scan.baseline.json         # 알려진 항목은 �
 - 받아들였던 항목이 사라지면 보고서가 알려 줍니다. `--write-baseline`으로 파일을 갱신하세요.
 - 정책 파일과 마찬가지로 기준선은 `--baseline`으로 지정한 것만 읽으며, 스캔 대상 폴더에서 찾지 않습니다.
 - SARIF에서는 결과에 `baselineState`(`new` 또는 `unchanged`)가 붙습니다.
+
+### 코딩 에이전트가 직접 실행하게 하기
+
+`skill-scan`에는 코딩 에이전트용 스킬(`skills/skill-scan/SKILL.md`)이 들어 있습니다. 설치해 두면 에이전트가 스킬이나 MCP 설정을 설치하기 **전에** 스캔하고, `critical`·`high` 항목이 있으면 멈춘 뒤 파일·줄·조치 방법과 함께 보여 줍니다.
+
+```bash
+skill-scan --install-skill user       # ~/.claude/skills/skill-scan  (모든 프로젝트)
+skill-scan --install-skill project    # ./.claude/skills/skill-scan  (이 프로젝트만)
+skill-scan --install-skill <폴더>     # <폴더>/skill-scan, 스킬을 다른 곳에 두는 에이전트용
+```
+
+설치 후 에이전트를 다시 시작하세요. 지우려면 그 폴더를 삭제하면 됩니다.
+
+- 설치된 스킬은 이 스캐너를 절대 경로로 호출합니다. 에이전트의 셸에는 사용자의 별칭이 없기 때문입니다. 저장소를 옮기거나 지우면 `--install-skill`을 다시 실행하세요.
+- 자기 것이 아닌 파일은 덮어쓰지 않습니다.
+- 스킬은 에이전트에게 스캔한 파일 안의 내용을 모두 데이터로 다루라고 지시합니다. 이것은 모델에게 주는 지시일 뿐 보장이 아닙니다. 믿을 수 있는 부분은 스캔 결과이므로, 직접 작성하지 않은 것은 탐지 항목을 직접 읽어 보세요.
+- 테스트한 것: 설치된 스킬이 자기 스캐너를 통과하고, 스킬에 적힌 명령이 실행됩니다. **실제 에이전트 세션으로는 테스트하지 않았습니다** (에이전트가 적절한 시점에 이 스킬을 불러오는지는 측정하지 않음).
 
 ### GitHub Action
 
@@ -301,6 +320,8 @@ AgentSkill-scan/
 │   ├── hooks/          # 개발용 차단 훅과 테스트
 │   ├── skills/         # add-rule: 규칙을 바꾸는 절차
 │   └── agents/         # false-positive-audit
+├── skills/
+│   └── skill-scan/     # --install-skill로 설치되는 스킬 (사용자의 에이전트용, 이 저장소 개발용이 아님)
 ├── action.yml          # GitHub Action
 └── CLAUDE.md           # 이 저장소에서 일하는 AI 에이전트를 위한 짧은 안내
 ```

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +33,9 @@ Options
   --write-baseline <file> record the current findings as the baseline, then exit with code 0
   --list-rules            print every rule and exit
   --explain <rule id>     print what a rule means and what to do about it, then exit
+  --install-skill <where> install the skill that teaches a coding agent to run this scanner before
+                          it installs a skill: user (~/.claude/skills), project (./.claude/skills)
+                          or a folder of your choice
   --no-color              plain text output
   -v, --version           print the version
   -h, --help              print this help
@@ -82,7 +85,7 @@ interface Options {
   color: boolean;
 }
 
-function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' | { explain: string } {
+function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' | { explain: string } | { installSkill: string } {
   const options: Options = { targets: [], installed: false, format: 'text', failOn: 'high', minSeverity: 'low', color: true };
   for (let i = 0; i < argv.length; i++) {
     let arg = argv[i] as string;
@@ -107,6 +110,8 @@ function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' | { e
         return 'rules';
       case '--explain':
         return { explain: value() };
+      case '--install-skill':
+        return { installSkill: value() };
       case '--installed':
         options.installed = true;
         break;
@@ -155,6 +160,28 @@ function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' | { e
   return options;
 }
 
+const SKILL_COMMAND_PLACEHOLDER = '{{SKILL_SCAN_COMMAND}}';
+
+/**
+ * Writes the bundled agent skill into a skills folder. The skill runs this very copy of the CLI by
+ * its absolute path, because an agent's shell has neither the user's aliases nor, before the
+ * package is on npm, a `skill-scan` command on the PATH.
+ */
+export function installSkill(where: string, cwd: string): string {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const template = readFileSync(path.resolve(here, '../../skills/skill-scan/SKILL.md'), 'utf8');
+  const skillsDir =
+    where === 'user' ? path.join(homedir(), '.claude', 'skills') : where === 'project' ? path.join(cwd, '.claude', 'skills') : path.resolve(cwd, where);
+  const file = path.join(skillsDir, 'skill-scan', 'SKILL.md');
+  if (existsSync(file) && !/^---\r?\nname: skill-scan\r?\n/.test(readFileSync(file, 'utf8'))) {
+    throw new Error(`${file} exists and is not the skill-scan skill; it was left untouched`);
+  }
+  const command = `node ${JSON.stringify(path.join(here, 'cli.js'))}`;
+  mkdirSync(path.dirname(file), { recursive: true });
+  writeFileSync(file, template.split(SKILL_COMMAND_PLACEHOLDER).join(command));
+  return file;
+}
+
 function listRules(): string {
   const rows = ALL_RULES.map((rule) => `${rule.id}  ${rule.severity.padEnd(8)}  ${rule.category.padEnd(16)}  ${rule.title}`);
   return ['ID     SEVERITY  CATEGORY          TITLE', ...rows].join('\n') + '\n';
@@ -188,6 +215,17 @@ export function main(argv: string[], cwd = process.cwd()): number {
     }
     process.stdout.write(formatRule(rule));
     return 0;
+  }
+
+  if ('installSkill' in parsed) {
+    try {
+      const file = installSkill(parsed.installSkill, cwd);
+      process.stdout.write(`Installed the skill-scan skill: ${file}\nRestart your coding agent to load it. To remove it, delete that folder.\n`);
+      return 0;
+    } catch (error) {
+      process.stderr.write(`skill-scan: ${(error as Error).message}\n`);
+      return 2;
+    }
   }
 
   const options = parsed;

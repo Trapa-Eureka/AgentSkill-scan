@@ -64,6 +64,7 @@ It is built for people who use AI coding agents, and for security and platform t
 | Exit codes for CI: `--fail-on <severity>`                                                                                                                            | Done                                                                   |
 | `--installed`: scan the skills and agent configuration already on your machine                                                                                       | Done                                                                   |
 | Policy file (`--config`): disable rules, change severities, exclude paths                                                                                            | Done                                                                   |
+| Agent skill (`--install-skill`): a coding agent scans a skill before installing it | Done (not tried with a live agent session) |
 | Every finding says what to do (`Fix:` line, `remediation` in JSON, `help` in SARIF); `--explain <rule id>` describes one rule | Done |
 | Baseline (`--baseline`, `--write-baseline`): accept today's findings, fail only on new ones | Done |
 | Credentials are masked and control characters neutralised in every report                                                                                            | Done                                                                   |
@@ -137,6 +138,7 @@ A path is a folder, a single file, or a `.zip` / `.skill` archive. With no path,
 | apply my own policy                    | `skill-scan . --config ./policy.json`                   |
 | accept today's findings, fail only on new ones | `skill-scan . --baseline ./skill-scan.baseline.json` |
 | list every rule                        | `skill-scan --list-rules`                               |
+| have my coding agent scan skills before installing them | `skill-scan --install-skill user` |
 | read what one rule means and what to do | `skill-scan --explain SH001` |
 
 `--installed` looks at `~/.claude/skills`, `~/.claude/agents`, `~/.claude/commands`, `~/.codex/skills`, `~/.agents/skills`, and in the current project `.claude/`, `.agents/`, `.mcp.json`, `.cursor/mcp.json` and `.vscode/mcp.json` (whichever exist).
@@ -178,6 +180,23 @@ skill-scan . --baseline skill-scan.baseline.json         # known findings are no
 - When an accepted finding disappears, the report says so; refresh the file with `--write-baseline`.
 - Like the policy file, the baseline is read only from `--baseline`, never discovered in the scanned folder.
 - In SARIF, results carry `baselineState` (`new` or `unchanged`).
+
+### Let your coding agent run it
+
+`skill-scan` ships a skill for coding agents (`skills/skill-scan/SKILL.md`). Once installed, the agent scans a skill or MCP configuration **before** it installs one, stops on `critical` and `high` findings, and shows them to you with the file, line and fix.
+
+```bash
+skill-scan --install-skill user       # ~/.claude/skills/skill-scan  (every project)
+skill-scan --install-skill project    # ./.claude/skills/skill-scan  (this project only)
+skill-scan --install-skill <folder>   # <folder>/skill-scan, for agents that keep skills elsewhere
+```
+
+Restart the agent afterwards. To remove the skill, delete that folder.
+
+- The installed skill calls this copy of the scanner by its absolute path, because an agent's shell does not have your alias. If you move or delete the repository, run `--install-skill` again.
+- It never overwrites a file that is not its own.
+- The skill tells the agent to treat everything inside the scanned files as data. That is an instruction to a model, not a guarantee: the scan result is the dependable part, so read the findings yourself for anything you did not write.
+- Tested: the installed skill passes its own scanner and its command runs. **Not tested with a live agent session** (whether an agent picks the skill up at the right moment was not measured).
 
 ### GitHub Action
 
@@ -301,6 +320,8 @@ AgentSkill-scan/
 │   ├── hooks/          # dev-time blocking hook and its tests
 │   ├── skills/         # add-rule: the procedure for changing a rule
 │   └── agents/         # false-positive-audit
+├── skills/
+│   └── skill-scan/     # the skill installed by --install-skill (for your agent, not for developing this repo)
 ├── action.yml          # GitHub Action
 └── CLAUDE.md           # short guidance for AI agents working in this repo
 ```
