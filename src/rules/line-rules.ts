@@ -200,7 +200,7 @@ export const LINE_RULES: LineRule[] = [
     remediation: 'Do not run. Nothing a skill does should need this.',
     cautionaryDowngrade: true,
     patterns: [
-      /\brm\s+(?:-[a-zA-Z-]+\s+)*-[a-zA-Z]*(?:[rR][a-zA-Z]*f|f[a-zA-Z]*[rR])[a-zA-Z]*\s+(?:-[a-zA-Z-]+\s+)*["']?(?:\/\*?|~\/?\*?|\$HOME\/?\*?|\$\{HOME\}\/?\*?|\/(?:usr|etc|var|bin|home|Users|System|Library)\/?)["']?(?:\s|$|[;&)|])/,
+      /\brm\s+(?:-[a-zA-Z-]+\s+)*-[a-zA-Z]*(?:[rR][a-zA-Z]*f|f[a-zA-Z]*[rR])[a-zA-Z]*\s+(?:-[a-zA-Z-]+\s+)*["']?(?:\/\*?|~\/?\*?|\$HOME\/?\*?|\$\{HOME\}\/?\*?|\/(?:usr|etc|var|bin|home|Users|System|Library)\/?)["']?(?:\s|$|[;&)|`])/,
       /\brm\b[^\n]{0,40}--no-preserve-root\b/,
       /\bdd\b[^\n]{0,80}\bof=\/dev\/(?:sd|hd|disk|nvme|rdisk)/,
       /\bmkfs(?:\.[a-z0-9]+)?\s+\/dev\//,

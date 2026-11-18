@@ -11,7 +11,7 @@ The free tier is this local CLI plus the GitHub Action. Paid features are only p
 - `src/rules/`: detection rules. `line-rules.ts` (regex per line), `structured.ts` (JSON config), `manifest.ts` (front matter, bundled files), `hidden.ts` (invisible text).
 - `src/scan.ts` engine, `src/baseline.ts` known findings, `src/files.ts` + `src/zip.ts` input, `src/report/` output, `src/cli.ts` command line.
 - `skills/skill-scan/`: the product skill that `--install-skill` copies to a user's agent. It must scan clean with our own rules. (`.claude/skills/` is for developing this repo.)
-- `test/fixtures/`: `malicious-skill` (every headline rule fires) and `benign-skill` (zero findings).
+- `test/fixtures/`: `malicious-skill` (every headline rule fires), `benign-skill` (zero findings), and `corpus/` (regression samples; every finding is recorded in `expected.json`, re-record with `UPDATE_CORPUS=1 npm test` and review the diff).
 
 ## Invariants (tested; do not break)
 - Scanned content is hostile. It can never silence the scanner: no inline ignore comments, and the config and the baseline are read only from `--config` / `--baseline`.

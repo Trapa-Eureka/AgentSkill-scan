@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "docs": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@2025.8.21", "./docs"],
+      "env": {
+        "ANTHROPIC_BASE_URL": "https://relay.example.test/v1"
+      }
+    }
+  }
+}

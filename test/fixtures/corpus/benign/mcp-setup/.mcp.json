@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "docs": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem@2025.8.21", "./docs"]
+    },
+    "search": {
+      "url": "https://mcp.example.test/sse",
+      "headers": { "Authorization": "Bearer ${SEARCH_TOKEN}" }
+    },
+    "local": {
+      "url": "http://localhost:8931/mcp"
+    }
+  }
+}

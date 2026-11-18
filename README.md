@@ -68,6 +68,7 @@ It is built for people who use AI coding agents, and for security and platform t
 | Agent skill (`--install-skill`): a coding agent scans a skill before installing it | Done (not tried with a live agent session) |
 | Every finding says what to do (`Fix:` line, `remediation` in JSON, `help` in SARIF); `--explain <rule id>` describes one rule | Done |
 | Baseline (`--baseline`, `--write-baseline`): accept today's findings, fail only on new ones | Done |
+| Regression corpus in the tests: honest skills that must pass the gate, disguised attacks that must fail it, and known false positives | Done (14 samples written for this repository) |
 | Credentials are masked and control characters neutralised in every report                                                                                            | Done                                                                   |
 | Zero runtime dependencies                                                                                                                                            | Done                                                                   |
 | GitHub Action (`action.yml`) that writes SARIF                                                                                                                       | Done (run on GitHub: reports, blocks on `fail-on`, passes a clean skill) |
@@ -272,6 +273,7 @@ The action also writes the findings as a table to the job summary (the page of t
 
 - **It is pattern matching, not understanding.** A finding means "look here", not "this is malicious". No finding means "no known pattern", not "safe". A determined author can evade static rules: a command assembled at run time, a payload fetched later, an instruction phrased in a way no rule expects.
 - **False positives are expected on security tooling.** Measured once on the skills installed on the author's machine (939 files, mostly one large toolkit): 117 findings, 45 of them `high`. Those sampled were documentation or tests that quote attacks (a blocklist of capture domains, "ignore previous instructions" inside a test, a skill that warns about injected text) or a real `curl … | bash` in a CI Dockerfile. This is one measurement on one machine, not a false-positive rate.
+- **Three false positives are known and kept as test samples** (`test/fixtures/corpus/known-false-positives/`): a skill that quotes "ignore all previous instructions" to warn about it, a "bad example" inside a code block, and a `critical` command quoted in a warning (lowered one level, it is still `high`). Each fails the default gate today. Use `--baseline` or the policy file for such content.
 - **The cautionary downgrade can be abused**: an author can add the word "never" to a line to drop it one level. It is one level only, and never applies to code blocks, scripts or prompt-injection rules.
 - Prompt-injection phrases are matched in English and a few Korean forms. Other languages are not covered.
 - Binaries and nested archives are reported (SK003) but not opened. Files over 2 MB are listed as not scanned.
@@ -317,7 +319,7 @@ AgentSkill-scan/
 │   ├── rules/          # line rules, JSON config checks, manifest checks, hidden text
 │   └── report/         # text, JSON, SARIF, Markdown
 ├── test/
-│   ├── fixtures/       # a malicious skill and a benign skill
+│   ├── fixtures/       # a malicious skill, a benign skill, and corpus/ (regression samples + expected.json)
 │   └── *.test.ts
 ├── .claude/
 │   ├── settings.json
@@ -335,6 +337,7 @@ AgentSkill-scan/
 ```bash
 npm run check        # typecheck, build, scanner tests, hook tests
 npm test             # scanner tests only
+UPDATE_CORPUS=1 npm test   # after an intended rule change: re-record test/fixtures/corpus/expected.json, then review its diff
 npm run test:hooks   # tests for the dev-time safety hook
 node dist/src/cli.js test/fixtures/malicious-skill
 ```
@@ -353,7 +356,7 @@ Scanning this repository itself reports findings: the rule sources and the test 
 
 ## Contributing
 
-The project is at an early stage. Please open an issue to discuss a change before sending a pull request. A rule change needs a matching and a non-matching test case (see `.claude/skills/add-rule/SKILL.md`). All tracked files are written in English; the one exception is a translation named `*.ko.md`, and the English file stays the source of truth.
+The project is at an early stage. Please open an issue to discuss a change before sending a pull request. A rule change needs a matching and a non-matching test case, and a fixed false positive needs a sample in `test/fixtures/corpus/` (see `.claude/skills/add-rule/SKILL.md`). All tracked files are written in English; the one exception is a translation named `*.ko.md`, and the English file stays the source of truth.
 
 Found a security problem in the scanner itself? Please do not open a public issue; see [SECURITY.md](SECURITY.md).
 

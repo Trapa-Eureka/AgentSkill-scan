@@ -68,6 +68,7 @@ AI 코딩 에이전트를 쓰는 사람, 그리고 회사에서 어떤 스킬을
 | 에이전트용 스킬(`--install-skill`): 코딩 에이전트가 스킬을 설치하기 전에 스캔 | 완료 (실제 에이전트 세션으로는 미확인) |
 | 탐지 항목마다 조치 방법 표시 (text의 `Fix:` 줄, JSON의 `remediation`, SARIF의 `help`), `--explain <규칙 id>`로 규칙 하나 설명 | 완료 |
 | 기준선(`--baseline`, `--write-baseline`): 오늘의 탐지 항목을 받아들이고 새 항목만 실패 처리 | 완료 |
+| 테스트의 회귀 예제 모음: 통과해야 하는 정상 스킬, 차단되어야 하는 위장 공격, 알려진 오탐 | 완료(이 저장소용으로 쓴 예제 14개) |
 | 모든 보고서에서 자격 증명을 가리고 제어 문자를 무력화 | 완료 |
 | 런타임 의존성 0개 | 완료 |
 | SARIF를 쓰는 GitHub Action (`action.yml`) | 완료 (GitHub에서 실행: 보고, `fail-on` 기준 차단, 정상 스킬 통과) |
@@ -272,6 +273,7 @@ Action은 탐지 항목을 표로 만들어 작업 요약(워크플로 실행 �
 
 - **이해가 아니라 패턴 대조입니다.** 탐지 항목은 "여기를 보라"는 뜻이지 "악성이다"가 아닙니다. 탐지 항목이 없다는 것은 "알려진 패턴이 없다"는 뜻이지 "안전하다"가 아닙니다. 작정한 작성자는 정적 규칙을 피할 수 있습니다: 실행 시점에 조립하는 명령, 나중에 받아오는 페이로드, 어떤 규칙도 예상하지 못한 표현의 지시.
 - **보안 도구에서는 오탐이 나옵니다.** 작성자 컴퓨터에 설치된 스킬(939개 파일, 대부분 큰 툴킷 하나)로 한 번 측정했습니다: 탐지 117건, 그중 `high` 45건. 열어 본 항목은 공격을 인용한 문서나 테스트(수집 도메인 차단 목록, 테스트 안의 "ignore previous instructions", 주입된 텍스트를 경고하는 스킬)이거나 CI Dockerfile의 실제 `curl … | bash`였습니다. 컴퓨터 한 대에서 한 번 잰 값이며 오탐률이 아닙니다.
+- **알려진 오탐 세 가지를 테스트 예제로 남겨 두었습니다**(`test/fixtures/corpus/known-false-positives/`): 경고하려고 "ignore all previous instructions"를 인용한 스킬, 코드 블록 안의 "나쁜 예", 경고문 안에 인용한 `critical` 명령(한 단계 낮춰도 `high`). 셋 다 지금은 기본 차단 기준에 걸립니다. 이런 내용에는 `--baseline`이나 정책 파일을 쓰세요.
 - **경고문 하향은 악용될 수 있습니다**: 작성자가 줄에 "never"를 넣어 한 단계 낮출 수 있습니다. 한 단계뿐이고, 코드 블록·스크립트·프롬프트 인젝션 규칙에는 적용되지 않습니다.
 - 프롬프트 인젝션 문구는 영어와 일부 한국어 표현만 대조합니다. 다른 언어는 다루지 않습니다.
 - 바이너리와 중첩된 압축 파일은 보고만 하고(SK003) 열지 않습니다. 2 MB가 넘는 파일은 스캔하지 않은 것으로 나열합니다.
@@ -317,7 +319,7 @@ AgentSkill-scan/
 │   ├── rules/          # 줄 단위 규칙, JSON 설정 검사, 매니페스트 검사, 숨은 텍스트
 │   └── report/         # text, JSON, SARIF, Markdown
 ├── test/
-│   ├── fixtures/       # 악성 스킬 하나와 정상 스킬 하나
+│   ├── fixtures/       # 악성 스킬, 정상 스킬, corpus/(회귀 예제와 expected.json)
 │   └── *.test.ts
 ├── .claude/
 │   ├── settings.json
@@ -335,6 +337,7 @@ AgentSkill-scan/
 ```bash
 npm run check        # 타입 검사, 빌드, 스캐너 테스트, 훅 테스트
 npm test             # 스캐너 테스트만
+UPDATE_CORPUS=1 npm test   # 의도한 규칙 변경 후: test/fixtures/corpus/expected.json을 다시 기록하고 diff를 검토
 npm run test:hooks   # 개발용 안전 훅 테스트
 node dist/src/cli.js test/fixtures/malicious-skill
 ```
@@ -353,7 +356,7 @@ node dist/src/cli.js test/fixtures/malicious-skill
 
 ## 기여
 
-프로젝트가 초기 단계입니다. 풀 리퀘스트를 보내기 전에 이슈로 먼저 논의해 주세요. 규칙을 바꾸려면 걸려야 하는 예와 걸리면 안 되는 예가 테스트에 있어야 합니다(`.claude/skills/add-rule/SKILL.md` 참조). 저장소의 파일은 영어로 작성하며, 이 문서 같은 `*.ko.md` 번역만 예외입니다.
+프로젝트가 초기 단계입니다. 풀 리퀘스트를 보내기 전에 이슈로 먼저 논의해 주세요. 규칙을 바꾸려면 걸려야 하는 예와 걸리면 안 되는 예가 테스트에 있어야 하고, 오탐을 고쳤다면 `test/fixtures/corpus/`에 예제를 넣어야 합니다(`.claude/skills/add-rule/SKILL.md` 참조). 저장소의 파일은 영어로 작성하며, 이 문서 같은 `*.ko.md` 번역만 예외입니다.
 
 스캐너 자체의 보안 문제를 발견하셨나요? 공개 이슈로 올리지 말고 [SECURITY.md](SECURITY.md)를 참고해 주세요.
 

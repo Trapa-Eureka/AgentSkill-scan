@@ -19,8 +19,9 @@ A rule is only done when it is proven in both directions: it reports the bad thi
 5. **Fixtures.** If the rule is a headline feature, add a line to `test/fixtures/malicious-skill/` and extend the expected id list. `test/fixtures/benign-skill/` must keep producing zero findings.
    - Create fixture files with the Write tool, not a shell heredoc: the dev hook reads shell command text and will block a command that contains a dangerous-looking string.
    - Never write a real-looking credential into a file. Assemble fake values at run time in the test.
-6. **Run `npm run check`** (typecheck, tests, hook tests). It must pass.
-7. **Measure false positives** on real content: `node dist/src/cli.js --installed --fail-on none --format json` and read the new rule's findings. If honest skills are flagged at `high`, narrow the pattern or lower the severity.
-8. **Update the README** rule table (`node dist/src/cli.js --list-rules` gives the current list).
+6. **Regression corpus** (`test/fixtures/corpus/`). When you fix a false positive, add the honest text as a sample under `benign/`; when you fix a missed detection, add the attack under `hostile/`. Text that is honest but still reported at `high` goes under `known-false-positives/`. Then run `UPDATE_CORPUS=1 npm test` and read the diff of `expected.json`: every changed line must be one you meant to change.
+7. **Run `npm run check`** (typecheck, tests, hook tests). It must pass.
+8. **Measure false positives** on real content: `node dist/src/cli.js --installed --fail-on none --format json` and read the new rule's findings. If honest skills are flagged at `high`, narrow the pattern or lower the severity.
+9. **Update the README** rule table (`node dist/src/cli.js --list-rules` gives the current list).
 
 Do not add inline-ignore comments or config auto-discovery to make a false positive go away: scanned content must never be able to silence the scanner.

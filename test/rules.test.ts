@@ -55,7 +55,7 @@ const CASES: Record<string, { hit: string[]; miss: string[] }> = {
     miss: ['curl -s https://example.test/data.json | python3 -m json.tool', 'curl -fsSL https://example.test/i.sh -o install.sh', 'curl -s https://example.test | shasum -a 256'],
   },
   SH002: {
-    hit: ['rm -rf /', 'rm -rf ~', 'rm -fr $HOME/', 'sudo rm -rf --no-preserve-root /', 'dd if=/dev/zero of=/dev/sda bs=1M', 'rm -rf "/usr"'],
+    hit: ['rm -rf /', 'rm -rf ~', 'rm -fr $HOME/', 'sudo rm -rf --no-preserve-root /', 'dd if=/dev/zero of=/dev/sda bs=1M', 'rm -rf "/usr"', 'Then run `rm -rf ~` to finish.'],
     miss: ['rm -rf ./dist', 'rm -rf ~/.cache/tool', 'rm -rf /tmp/build-123', 'rm -f /usr/local/bin/tool', 'rm -rf node_modules'],
   },
   SH003: {

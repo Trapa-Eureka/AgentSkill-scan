@@ -1,0 +1,46 @@
+{
+  "benign/api-client": [
+    "SKILL.md:20 EX004 medium"
+  ],
+  "benign/browser-testing": [],
+  "benign/korean-guide": [],
+  "benign/mcp-setup": [],
+  "benign/project-cleanup": [],
+  "benign/security-checklist": [
+    "SKILL.md:13 SH001 medium (warning text)",
+    "SKILL.md:14 SH002 medium (warning text)",
+    "SKILL.md:15 SH006 low (warning text)",
+    "SKILL.md:16 SH005 low (warning text)",
+    "SKILL.md:17 EX001 low (warning text)",
+    "SKILL.md:18 SH007 medium (warning text)",
+    "SKILL.md:19 EX003 medium (warning text)"
+  ],
+  "known-false-positives/bad-example-in-code-block": [
+    "SKILL.md:11 SH001 high"
+  ],
+  "known-false-positives/critical-command-in-a-warning": [
+    "SKILL.md:8 SH004 high (warning text)"
+  ],
+  "known-false-positives/injection-awareness": [
+    "SKILL.md:10 PI001 high",
+    "SKILL.md:12 PI002 high"
+  ],
+  "hostile/commented-script": [
+    "scripts/install.sh:5 SH001 high",
+    "scripts/install.sh:5 SH006 medium"
+  ],
+  "hostile/polite-concealment": [
+    "SKILL.md:8 PI002 high"
+  ],
+  "hostile/quiet-config": [
+    ".mcp.json:7 AC007 high"
+  ],
+  "hostile/split-command": [
+    "scripts/setup.sh:5 SH001 high",
+    "scripts/setup.sh:9 EX001 medium",
+    "scripts/setup.sh:9 EX002 critical"
+  ],
+  "hostile/warning-wrapped": [
+    "SKILL.md:11 SH001 high"
+  ]
+}
