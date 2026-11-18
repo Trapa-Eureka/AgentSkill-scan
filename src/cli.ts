@@ -11,6 +11,7 @@ import { ALL_RULES, ruleById } from './rules/index.js';
 import { formatRule, formatText } from './report/text.js';
 import { formatJson } from './report/json.js';
 import { formatSarif } from './report/sarif.js';
+import { formatMarkdown } from './report/markdown.js';
 
 const HELP = `skill-scan: static security scanner for AI agent skills and MCP configuration
 
@@ -22,11 +23,12 @@ Usage
 Options
   --installed             also scan the skills and agent configuration already on this machine
                           (~/.claude/skills, agents, commands; ./.claude; ./.mcp.json; ...)
-  --format <name>         text (default), json or sarif
+  --format <name>         text (default), json, sarif or markdown
   --output <file>         write the report to a file instead of the terminal
   --fail-on <severity>    exit with code 1 when a finding is at least this severe:
                           low, medium, high (default), critical, or none
-  --min-severity <sev>    list only findings at least this severe in the text report (default: low)
+  --min-severity <sev>    list only findings at least this severe in the text and markdown
+                          reports (default: low)
   --config <file>         JSON file with "disable", "severity" and "exclude" (never auto-discovered)
   --baseline <file>       findings recorded in this file are known: they are not listed and do
                           not fail the run (never auto-discovered)
@@ -75,7 +77,7 @@ function installedTargets(cwd: string): string[] {
 interface Options {
   targets: string[];
   installed: boolean;
-  format: 'text' | 'json' | 'sarif';
+  format: 'text' | 'json' | 'sarif' | 'markdown';
   output?: string;
   failOn: Severity | 'none';
   minSeverity: Severity;
@@ -120,7 +122,9 @@ function parseArgs(argv: string[]): Options | 'help' | 'version' | 'rules' | { e
         break;
       case '--format': {
         const format = value();
-        if (format !== 'text' && format !== 'json' && format !== 'sarif') throw new UsageError(`unknown format "${format}" (use text, json or sarif)`);
+        if (format !== 'text' && format !== 'json' && format !== 'sarif' && format !== 'markdown') {
+          throw new UsageError(`unknown format "${format}" (use text, json, sarif or markdown)`);
+        }
         options.format = format;
         break;
       }
@@ -256,7 +260,9 @@ export function main(argv: string[], cwd = process.cwd()): number {
         ? formatJson(result, version())
         : options.format === 'sarif'
           ? formatSarif(result, version())
-          : formatText(result, { color: useColor, minSeverity: options.minSeverity });
+          : options.format === 'markdown'
+            ? formatMarkdown(result, { minSeverity: options.minSeverity })
+            : formatText(result, { color: useColor, minSeverity: options.minSeverity });
     if (options.output) {
       writeFileSync(path.resolve(cwd, options.output), report);
       const known = result.baseline ? ` (${result.baseline.known} known from the baseline)` : '';

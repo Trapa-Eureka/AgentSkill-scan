@@ -61,6 +61,7 @@ AI 코딩 에이전트를 쓰는 사람, 그리고 회사에서 어떤 스킬을
 | 숨은 텍스트: 유니코드 태그 문자(보고서에 해독해서 표시), 양방향 제어 문자, 연속된 폭 없는 문자, HTML 주석 속 지시 | 완료 |
 | MCP·설정 검사: 버전 미고정 `npx`/`uvx` 서버, 셸 래퍼, 값으로 적힌 자격 증명, 평문 http 서버, 자동 승인, 함께 배포된 훅, API 주소 변경 | 완료 |
 | text, JSON, SARIF 2.1.0 출력 | 완료 (GitHub code scanning에 1회 업로드: 경고 27건, 심각도·파일·줄 일치) |
+| Markdown 보고서(`--format markdown`): PR 댓글이나 작업 요약용. 스캔한 텍스트는 코드 표시 안에만 들어감 | 완료 (GitHub에서 렌더링은 아직 미확인) |
 | CI용 종료 코드: `--fail-on <심각도>` | 완료 |
 | `--installed`: 이 컴퓨터에 이미 설치된 스킬과 에이전트 설정 스캔 | 완료 |
 | 정책 파일(`--config`): 규칙 끄기, 심각도 변경, 경로 제외 | 완료 |
@@ -133,6 +134,7 @@ skill-scan [옵션] [경로 ...]
 | 심각한 항목만 보기 | `skill-scan ./my-skill --min-severity high` |
 | 기계가 읽는 출력 받기 | `skill-scan ./my-skill --format json` |
 | 대시보드용 SARIF 쓰기 | `skill-scan . --format sarif --output skill-scan.sarif` |
+| PR 댓글용 표 받기 | `skill-scan . --format markdown --output skill-scan.md` |
 | medium 이상이면 CI 실패 | `skill-scan . --fail-on medium` |
 | 실패 없이 보고만 | `skill-scan . --fail-on none` |
 | 내 정책 적용 | `skill-scan . --config ./policy.json` |
@@ -223,6 +225,8 @@ jobs:
 
 러너에는 Node 22 이상이 필요합니다.
 
+Action은 탐지 항목을 표로 만들어 작업 요약(워크플로 실행 페이지)에도 씁니다. `summary: 'false'`로 끌 수 있습니다. 그 밖의 입력: `config`, `baseline`, `sarif-file`. `summary`와 `baseline` 입력은 위에서 설명한 실행 이후에 추가되어 **아직 GitHub에서 실행해 보지 않았습니다**. 로컬에서 단계를 흉내 내어 확인했을 뿐입니다.
+
 ## 규칙
 
 | Id | 심각도 | 보고하는 것 |
@@ -311,7 +315,7 @@ AgentSkill-scan/
 │   ├── config.ts       # 정책 파일
 │   ├── baseline.ts     # 알려진 탐지 항목: 새 항목만 실패 처리
 │   ├── rules/          # 줄 단위 규칙, JSON 설정 검사, 매니페스트 검사, 숨은 텍스트
-│   └── report/         # text, JSON, SARIF
+│   └── report/         # text, JSON, SARIF, Markdown
 ├── test/
 │   ├── fixtures/       # 악성 스킬 하나와 정상 스킬 하나
 │   └── *.test.ts

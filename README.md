@@ -61,6 +61,7 @@ It is built for people who use AI coding agents, and for security and platform t
 | Hidden text: Unicode tag characters (decoded in the report), bidirectional overrides, zero-width runs, instructions in HTML comments                                 | Done                                                                   |
 | MCP and settings checks: unpinned `npx`/`uvx` servers, shell wrappers, literal credentials, plain-http servers, auto-approval, shipped hooks, API endpoint overrides | Done                                                                   |
 | Output as text, JSON, or SARIF 2.1.0                                                                                                                                 | Done (SARIF uploaded to GitHub code scanning once: 27 alerts with matching severity, file and line) |
+| Markdown report (`--format markdown`) for a pull request comment or a job summary; scanned text stays inside code spans | Done (rendering on GitHub not checked yet) |
 | Exit codes for CI: `--fail-on <severity>`                                                                                                                            | Done                                                                   |
 | `--installed`: scan the skills and agent configuration already on your machine                                                                                       | Done                                                                   |
 | Policy file (`--config`): disable rules, change severities, exclude paths                                                                                            | Done                                                                   |
@@ -133,6 +134,7 @@ A path is a folder, a single file, or a `.zip` / `.skill` archive. With no path,
 | see only the serious findings          | `skill-scan ./my-skill --min-severity high`             |
 | get machine-readable output            | `skill-scan ./my-skill --format json`                   |
 | write SARIF for a dashboard            | `skill-scan . --format sarif --output skill-scan.sarif` |
+| get a table for a pull request comment | `skill-scan . --format markdown --output skill-scan.md` |
 | fail CI on medium and above            | `skill-scan . --fail-on medium`                         |
 | never fail, only report                | `skill-scan . --fail-on none`                           |
 | apply my own policy                    | `skill-scan . --config ./policy.json`                   |
@@ -223,6 +225,8 @@ jobs:
 
 The runner needs Node 22 or newer.
 
+The action also writes the findings as a table to the job summary (the page of the workflow run). Turn that off with `summary: 'false'`. Other inputs: `config`, `baseline`, `sarif-file`. The `summary` and `baseline` inputs were added after the run described above and have **not been run on GitHub yet**; the step was only simulated locally.
+
 ## Rules
 
 | Id    | Severity | What it reports                                                                                  |
@@ -311,7 +315,7 @@ AgentSkill-scan/
 │   ├── config.ts       # policy file
 │   ├── baseline.ts     # known findings: fail only on new ones
 │   ├── rules/          # line rules, JSON config checks, manifest checks, hidden text
-│   └── report/         # text, JSON, SARIF
+│   └── report/         # text, JSON, SARIF, Markdown
 ├── test/
 │   ├── fixtures/       # a malicious skill and a benign skill
 │   └── *.test.ts

@@ -19,6 +19,9 @@ inputs:
   baseline:
     description: Optional path to a baseline file. Findings recorded in it do not fail the step.
     default: ''
+  summary:
+    description: Write the findings as a table to the job summary ("true" or "false").
+    default: 'true'
 runs:
   using: composite
   steps:
@@ -35,8 +38,13 @@ runs:
         SKILL_SCAN_SARIF: ${{ inputs.sarif-file }}
         SKILL_SCAN_CONFIG: ${{ inputs.config }}
         SKILL_SCAN_BASELINE: ${{ inputs.baseline }}
+        SKILL_SCAN_SUMMARY: ${{ inputs.summary }}
       run: |
-        args=(--format sarif --output "$SKILL_SCAN_SARIF" --fail-on "$SKILL_SCAN_FAIL_ON")
-        if [ -n "$SKILL_SCAN_CONFIG" ]; then args+=(--config "$SKILL_SCAN_CONFIG"); fi
-        if [ -n "$SKILL_SCAN_BASELINE" ]; then args+=(--baseline "$SKILL_SCAN_BASELINE"); fi
-        node "$GITHUB_ACTION_PATH/dist/src/cli.js" "${args[@]}" -- "$SKILL_SCAN_PATH"
+        common=()
+        if [ -n "$SKILL_SCAN_CONFIG" ]; then common+=(--config "$SKILL_SCAN_CONFIG"); fi
+        if [ -n "$SKILL_SCAN_BASELINE" ]; then common+=(--baseline "$SKILL_SCAN_BASELINE"); fi
+        cli="$GITHUB_ACTION_PATH/dist/src/cli.js"
+        if [ "$SKILL_SCAN_SUMMARY" = "true" ] && [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+          node "$cli" --format markdown --fail-on none ${common[@]+"${common[@]}"} -- "$SKILL_SCAN_PATH" >> "$GITHUB_STEP_SUMMARY"
+        fi
+        node "$cli" --format sarif --output "$SKILL_SCAN_SARIF" --fail-on "$SKILL_SCAN_FAIL_ON" ${common[@]+"${common[@]}"} -- "$SKILL_SCAN_PATH"
